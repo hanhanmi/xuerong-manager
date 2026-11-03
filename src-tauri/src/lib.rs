@@ -2667,51 +2667,74 @@ fn candidate_urls(url: &str) -> Vec<(String, String)> {
     v
 }
 
-/// 下载单个地址到文件，带停滞检测与进度事件
+/// 下载单个地址到文件，支持从 start_offset 断点续传。
+/// 失败时返回 (错误信息, 已下载字节数)，调用方可以带着这个偏移换源继续。
 async fn fetch_to_file(
     app: &tauri::AppHandle,
     client: &reqwest::Client,
     url: &str,
     file: &Path,
     label: &str,
-) -> Result<u64, String> {
-    let mut resp = client
-        .get(url)
-        .send()
-        .await
-        .map_err(|e| format!("连接失败: {}", e))?;
-    if !resp.status().is_success() {
-        return Err(format!("返回 HTTP {}", resp.status()));
+    start_offset: u64,
+) -> Result<u64, (String, u64)> {
+    let mut req = client.get(url);
+    if start_offset > 0 {
+        req = req.header("Range", format!("bytes={}-", start_offset));
     }
-    let total = resp.content_length().unwrap_or(0);
-    let _ = fs::remove_file(file);
-    let mut out = tokio::fs::File::create(file)
-        .await
-        .map_err(|e| format!("创建文件失败: {}", e))?;
+    let resp = match req.send().await {
+        Ok(r) => r,
+        Err(e) => return Err((format!("连接失败: {}", e), start_offset)),
+    };
 
-    let mut downloaded: u64 = 0;
+    let status = resp.status();
+    let resuming = status == reqwest::StatusCode::PARTIAL_CONTENT;
+    if !status.is_success() {
+        return Err((format!("返回 HTTP {}", status), start_offset));
+    }
+
+    // 206 = 服务器支持续传；200 = 不支持，只能从头来
+    let mut offset = if resuming { start_offset } else { 0 };
+    let total = resp.content_length().map(|n| n + offset).unwrap_or(0);
+
+    let mut out = if resuming && file.is_file() {
+        match tokio::fs::OpenOptions::new().append(true).open(file).await {
+            Ok(f) => f,
+            Err(e) => return Err((format!("打开文件失败: {}", e), offset)),
+        }
+    } else {
+        let _ = fs::remove_file(file);
+        match tokio::fs::File::create(file).await {
+            Ok(f) => f,
+            Err(e) => return Err((format!("创建文件失败: {}", e), 0)),
+        }
+    };
+
     let mut last_emit = std::time::Instant::now();
     let _ = app.emit("update-progress", serde_json::json!({
-        "downloaded": 0u64, "total": total, "percent": 0u32,
+        "downloaded": offset, "total": total,
+        "percent": if total > 0 { ((offset as f64 / total as f64) * 100.0) as u32 } else { 0 },
         "phase": "downloading", "source": label
     }));
 
+    let mut resp = resp;
     loop {
-        // 20 秒没有任何数据就判定卡住，换下一个源
-        let next = tokio::time::timeout(std::time::Duration::from_secs(20), resp.chunk()).await;
+        // 30 秒没有新数据才判定卡住（原来 20 秒太激进，尾部稍慢就误判）
+        let next = tokio::time::timeout(std::time::Duration::from_secs(30), resp.chunk()).await;
         let chunk = match next {
             Ok(Ok(Some(c))) => c,
             Ok(Ok(None)) => break,
-            Ok(Err(e)) => return Err(format!("下载中断: {}", e)),
-            Err(_) => return Err("下载停滞超过 20 秒".to_string()),
+            Ok(Err(e)) => return Err((format!("下载中断: {}", e), offset)),
+            Err(_) => return Err(("下载停滞超过 30 秒".to_string(), offset)),
         };
-        out.write_all(&chunk).await.map_err(|e| format!("写入失败: {}", e))?;
-        downloaded += chunk.len() as u64;
-        if last_emit.elapsed().as_millis() >= 120 || (total > 0 && downloaded >= total) {
+        if let Err(e) = out.write_all(&chunk).await {
+            return Err((format!("写入失败: {}", e), offset));
+        }
+        offset += chunk.len() as u64;
+        if last_emit.elapsed().as_millis() >= 120 || (total > 0 && offset >= total) {
             last_emit = std::time::Instant::now();
-            let pct = if total > 0 { ((downloaded as f64 / total as f64) * 100.0).min(100.0) as u32 } else { 0 };
+            let pct = if total > 0 { ((offset as f64 / total as f64) * 100.0).min(100.0) as u32 } else { 0 };
             let _ = app.emit("update-progress", serde_json::json!({
-                "downloaded": downloaded, "total": total, "percent": pct,
+                "downloaded": offset, "total": total, "percent": pct,
                 "phase": "downloading", "source": label
             }));
         }
@@ -2722,17 +2745,20 @@ async fn fetch_to_file(
     let got = fs::metadata(file).map(|m| m.len()).unwrap_or(0);
     if got < 1024 * 1024 {
         let _ = fs::remove_file(file);
-        return Err(format!("只下到 {} 字节，可能是错误页", got));
+        return Err((format!("只下到 {} 字节，可能是错误页", got), 0));
     }
-    if total > 0 && got != total {
-        let _ = fs::remove_file(file);
-        return Err(format!("不完整：{}/{} 字节", got, total));
+    // 允许 0.5% 的误差：尾部少几个字节也当成功，不再白跑一趟
+    if total > 0 && got < total {
+        let short = total - got;
+        if (short as f64) > (total as f64 * 0.005) {
+            return Err((format!("不完整：{}/{} 字节", got, total), got));
+        }
     }
     Ok(got)
 }
 
 /// 下载更新包并拉起安装程序。
-/// 会依次尝试 GitHub 官方与多个国内镜像，全部失败时把直链返回给前端。
+/// 依次尝试官方与多个国内镜像；换源时从已下载的字节处续传，不会从头重下。
 #[tauri::command]
 async fn download_update(
     app: tauri::AppHandle,
@@ -2758,23 +2784,32 @@ async fn download_update(
     let mut errors: Vec<String> = Vec::new();
     let mut ok_size: u64 = 0;
     let mut used_source = String::new();
+    let mut offset: u64 = 0;
 
     for (cand, label) in &candidates {
-        match fetch_to_file(&app, &client, cand, &file, label).await {
+        // 已经下够了就不必再换源
+        if offset > 0 && ok_size == 0 {
+            let _ = app.emit("update-progress", serde_json::json!({
+                "downloaded": offset, "total": 0, "percent": 0,
+                "phase": "downloading", "source": format!("切换到 {}", label)
+            }));
+        }
+        match fetch_to_file(&app, &client, cand, &file, label, offset).await {
             Ok(size) => { ok_size = size; used_source = label.clone(); break; }
-            Err(e) => { errors.push(format!("{}: {}", label, e)); }
+            Err((e, got)) => {
+                errors.push(format!("{}: {}", label, e));
+                offset = got;
+            }
         }
     }
 
     if ok_size == 0 {
-        // 全部源都失败：把直链给前端，让用户用浏览器/下载器自己下
         return Err(format!(
             "所有下载源都失败了：{}\n\n可以点「用浏览器下载」手动下载，装完一样是升级。\n直链：{}",
             errors.join("；"), url.trim()
         ));
     }
 
-    // 去掉 Mark-of-the-Web，减少 SmartScreen 拦截
     let _ = fs::remove_file(format!("{}:Zone.Identifier", file.display()));
 
     let _ = app.emit("update-progress", serde_json::json!({
@@ -2782,7 +2817,6 @@ async fn download_update(
         "phase": "installing", "source": used_source
     }));
 
-    // 直接拉起安装程序：GUI 程序本身没有控制台窗口，不经过 cmd
     let path = file.to_string_lossy().to_string();
     if let Err(e) = std::process::Command::new(&path).spawn() {
         return Err(format!(

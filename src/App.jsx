@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.9.1";
+const VER = "v2.9.2";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -433,9 +433,20 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.9.1",
+    v: "v2.9.2",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "修复：下载到 99% 突然换源、进度条归零重下",
+      "下载支持断点续传，换源时从已下载位置继续，不再从头开始",
+      "停滞判定从 20 秒放宽到 30 秒，尾部稍慢不再误判",
+      "尾部误差 0.5% 以内直接视为下载完成，不白跑一趟",
+    ],
+  },
+  {
+    v: "v2.9.1",
+    date: "2026-11-03",
+    tag: "修复",
     items: [
       "修复：导入的本地音乐点了没反应（CSP 拦截 blob 音频）",
       "新增：播放进度条，可拖动跳转，两侧显示已播 / 总时长",
