@@ -1068,6 +1068,8 @@ fn uninstall(app: TauriState<'_, AppState>) -> Value {
     }
 
     // ⑤ 还原被覆盖的官方原文件（这是 Steam 不再提示「需要更新」的关键）
+    ICON_AT.store(0, Ordering::Relaxed);
+    ICON_COUNT.store(u64::MAX, Ordering::Relaxed);
     let restored = restore_official_files(&csgo);
 
     // ⑥ gameinfo 兜底：快照里没有就用整合包自带的官方版
@@ -2075,7 +2077,7 @@ fn get_killfeed(app: TauriState<'_, AppState>) -> Value {
         }
     }
     let icons = csgo_dir(&cs2).join("panorama").join("images").join("icons").join("equipment");
-    let icon_count = fs::read_dir(&icons).map(|rd| rd.flatten().count()).unwrap_or(0);
+    let icon_count = icon_count_cached(&icons);
     let mounted = fs::read_to_string(csgo_dir(&cs2).join("gameinfo.gi"))
         .map(|t| t.contains("panorama/images/icons/equipment"))
         .unwrap_or(false);
@@ -2090,6 +2092,27 @@ fn get_killfeed(app: TauriState<'_, AppState>) -> Value {
 }
 
 // ── 击杀图标资源覆盖开关（排查 D3D / 主界面闪退用） ──
+
+/// 图标数量缓存：目录里有 1593 个文件，每次设置操作都全扫一遍太浪费
+static ICON_COUNT: AtomicU64 = AtomicU64::new(u64::MAX);
+static ICON_AT: AtomicU64 = AtomicU64::new(0);
+
+fn icon_count_cached(dir: &Path) -> usize {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+    let cached = ICON_COUNT.load(Ordering::Relaxed);
+    if cached != u64::MAX && now.saturating_sub(ICON_AT.load(Ordering::Relaxed)) < 5000 {
+        return cached as usize;
+    }
+    let n = fs::read_dir(dir)
+        .map(|rd| rd.flatten().filter(|e| e.file_name().to_string_lossy().ends_with(".vsvg_c")).count())
+        .unwrap_or(0);
+    ICON_COUNT.store(n as u64, Ordering::Relaxed);
+    ICON_AT.store(now, Ordering::Relaxed);
+    n
+}
 
 fn icon_dir(cs2_path: &str) -> PathBuf {
     csgo_dir(cs2_path)
@@ -2373,9 +2396,7 @@ fn validate_manifest(app: TauriState<'_, AppState>) -> Value {
 
     // 图标资源目录：只数数量，不逐个列
     let icons = base.join("panorama").join("images").join("icons").join("equipment");
-    let icon_count = fs::read_dir(&icons)
-        .map(|rd| rd.flatten().filter(|e| e.file_name().to_string_lossy().ends_with(".vsvg_c")).count())
-        .unwrap_or(0);
+    let icon_count = icon_count_cached(&icons);
     if icon_count == 0 {
         missing.push("panorama/images/icons/equipment/*.vsvg_c（击杀图标资源，需要 ≥1 个）".into());
     } else {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import { api, isTauri } from "./api.js";
 import splashImg from "./assets/splash.png";
 import bgmSrc from "./assets/bgm.mp3";
@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.9.0";
+const VER = "v2.9.1";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -104,6 +104,8 @@ function MusicProvider({ children }) {
     const v = parseFloat(localStorage.getItem("xr.vol") || "");
     return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0.45;
   });
+  const [cur, setCur] = useState(0);
+  const [dur, setDur] = useState(0);
   const volRef = useRef(volume);
 
   const setVisible = useCallback((v) => {
@@ -140,7 +142,12 @@ function MusicProvider({ children }) {
     const a = audioRef.current;
     const t = tracks[i];
     if (!a || !t) return;
-    if (a.getAttribute("src") !== t.url) a.src = t.url;
+    if (a.getAttribute("src") !== t.url) {
+      a.src = t.url;
+      setCur(0);
+      setDur(0);
+      try { a.load(); } catch {}
+    }
     setIdx(i);
     try { a.volume = 0; await a.play(); setPlaying(true); fadeTo(volRef.current); } catch {}
   }, [tracks, fadeTo]);
@@ -160,6 +167,16 @@ function MusicProvider({ children }) {
     if (tracks.length < 2) return;
     playAt((idx - 1 + tracks.length) % tracks.length);
   }, [idx, tracks.length, playAt]);
+
+  const seek = useCallback((t) => {
+    const a = audioRef.current;
+    if (!a) return;
+    const d = Number.isFinite(a.duration) ? a.duration : 0;
+    if (d <= 0) return;
+    const pos = Math.min(Math.max(0, t), d);
+    a.currentTime = pos;
+    setCur(pos);
+  }, []);
 
   const changeVolume = (v) => {
     const val = Math.min(1, Math.max(0, v));
@@ -214,11 +231,17 @@ function MusicProvider({ children }) {
 
   return (
     <MusicCtx.Provider value={{
-      tracks, idx, playing, visible, volume,
-      toggle, next, prev, playAt, changeVolume, importFiles, removeTrack, setVisible,
+      tracks, idx, playing, visible, volume, cur, dur,
+      toggle, next, prev, playAt, seek, changeVolume, importFiles, removeTrack, setVisible,
     }}>
       {children}
       <audio ref={audioRef} src={bgmSrc} loop={tracks.length === 1} preload="auto"
+        onTimeUpdate={(e) => {
+          const t = e.currentTarget.currentTime || 0;
+          setCur((prev) => (Math.abs(prev - t) < 0.2 ? prev : t));
+        }}
+        onLoadedMetadata={(e) => setDur(e.currentTarget.duration || 0)}
+        onDurationChange={(e) => setDur(e.currentTarget.duration || 0)}
         onEnded={() => { if (tracks.length > 1) next(); }} />
     </MusicCtx.Provider>
   );
@@ -226,15 +249,31 @@ function MusicProvider({ children }) {
 const useMusic = () => useContext(MusicCtx);
 
 /* ═══════════ 播放器界面 ═══════════ */
+function fmtTime(sec) {
+  const n = Number(sec);
+  if (!Number.isFinite(n) || n <= 0) return "0:00";
+  const m = Math.floor(n / 60);
+  const ss = Math.floor(n % 60);
+  return `${m}:${String(ss).padStart(2, "0")}`;
+}
+
 function MusicPlayer() {
   const {
-    tracks, idx, playing, visible, volume,
-    toggle, next, prev, playAt, changeVolume, importFiles, removeTrack, setVisible,
+    tracks, idx, playing, visible, volume, cur, dur,
+    toggle, next, prev, playAt, seek, changeVolume, importFiles, removeTrack, setVisible,
   } = useMusic();
   const { toast } = useToast();
   const [showList, setShowList] = useState(false);
+  const [closing, setClosing] = useState(false);
   const fileRef = useRef(null);
-  const cur = tracks[idx] || tracks[0];
+  const track = tracks[idx] || tracks[0];
+
+  // 关掉时先播「收进收纳袋」动画，再真正卸载
+  const closePlayer = () => {
+    if (closing) return;
+    setClosing(true);
+    setTimeout(() => { setVisible(false); setClosing(false); }, 360);
+  };
 
   // 关掉后留一个小入口，随时能再打开
   if (!visible) {
@@ -246,16 +285,27 @@ function MusicPlayer() {
   }
 
   return (
-    <div className="player">
+    <div className={`player ${closing ? "player--put" : ""}`}>
       <div className="player__head">
         <span className="player__art">{I.note(16)}</span>
         <span className="player__meta">
-          <b title={cur?.name}>{cur?.name || "未选择"}</b>
+          <b title={track?.name}>{track?.name || "未选择"}</b>
           <em>{tracks.length > 1 ? `${idx + 1} / ${tracks.length}` : "内置音乐"}</em>
         </span>
-        <button className="player__x" onClick={() => setVisible(false)} title="关闭播放器">
+        <button className="player__x" onClick={closePlayer} title="关闭播放器">
           {I.close(12)}
         </button>
+      </div>
+
+      <div className="player__seek">
+        <span className="player__time">{fmtTime(cur)}</span>
+        <input className="range player__bar" type="range"
+          min="0" max={dur > 0 ? dur : 0} step="0.1"
+          value={dur > 0 ? Math.min(cur, dur) : 0}
+          disabled={dur <= 0}
+          onChange={(e) => seek(Number(e.target.value))}
+          title="拖动调整进度" />
+        <span className="player__time">{fmtTime(dur)}</span>
       </div>
 
       <div className="player__ctrl">
@@ -383,9 +433,23 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.9.0",
+    v: "v2.9.1",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "修复：导入的本地音乐点了没反应（CSP 拦截 blob 音频）",
+      "新增：播放进度条，可拖动跳转，两侧显示已播 / 总时长",
+      "新增：页面滑到顶/底再继续滑动时有弹性拉伸回弹",
+      "新增：关闭播放器时「收进收纳袋」动画，打开时再取出来",
+      "优化：图标目录扫描加 5 秒缓存，设置操作不再重复扫 1593 个文件",
+      "优化：命令页搜索不再每次按键重建 68 条数据",
+      "优化：播放进度只在变化超过 0.2 秒时刷新界面",
+    ],
+  },
+  {
+    v: "v2.9.0",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "音乐播放器重做：可导入本地音乐、切歌、查看列表",
       "导入的歌曲保存在本机，重启后还在，可随时移除",
@@ -1445,21 +1509,26 @@ const CMD_GROUPS = [
   },
 ];
 
+// 扁平化 + 分类标签只算一次（68 条，搜索时不再重建）
+const ALL_CMDS = CMD_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.key })));
+const CMD_TABS = [{ key: "all", label: `全部 ${ALL_CMDS.length}` }]
+  .concat(CMD_GROUPS.map((g) => ({ key: g.key, label: g.label })));
+
 function Commands({ toast }) {
   const [tab, setTab] = useState("all");
   const [q, setQ] = useState("");
 
-  const all = CMD_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.key, groupLabel: g.label })));
-  const kw = q.trim().toLowerCase();
-  const list = all.filter((i) => {
-    if (tab !== "all" && i.group !== tab) return false;
-    if (!kw) return true;
-    return i.cmd.toLowerCase().includes(kw) || i.desc.toLowerCase().includes(kw);
-  });
-
-  const tabs = [{ key: "all", label: `全部 ${all.length}` }].concat(
-    CMD_GROUPS.map((g) => ({ key: g.key, label: g.label }))
-  );
+  const list = useMemo(() => {
+    const kw = q.trim().toLowerCase();
+    if (!kw && tab === "all") return ALL_CMDS;
+    return ALL_CMDS.filter((i) => {
+      if (tab !== "all" && i.group !== tab) return false;
+      if (!kw) return true;
+      return i.cmd.toLowerCase().includes(kw) || i.desc.toLowerCase().includes(kw);
+    });
+  }, [tab, q]);
+  const all = ALL_CMDS;
+  const tabs = CMD_TABS;
 
   const copy = async (cmd) => {
     try { await navigator.clipboard.writeText(cmd); toast(`已复制 ${cmd}`); }
@@ -1719,12 +1788,53 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
   );
 }
 
+/* ═══════════ 滚动弹性拉伸 ═══════════ */
+function useElasticScroll(ref) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let over = 0;
+    let settle = 0;
+    let raf = 0;
+    const paint = () => {
+      if (!over) { el.style.transform = ""; return; }
+      el.style.transformOrigin = over > 0 ? "center top" : "center bottom";
+      el.style.transform = `translateY(${(over * 0.32).toFixed(1)}px) scaleY(${(1 + Math.abs(over) / 2200).toFixed(4)})`;
+    };
+    const onWheel = (e) => {
+      const atTop = el.scrollTop <= 0;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+      const pulling = (atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0);
+      if (!pulling) return;
+      over += e.deltaY * 0.28;
+      over = Math.max(-64, Math.min(64, over));
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(paint);
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        el.style.transition = "transform .42s cubic-bezier(.34, 1.5, .64, 1)";
+        over = 0;
+        paint();
+        setTimeout(() => { el.style.transition = ""; }, 440);
+      }, 90);
+    };
+    el.addEventListener("wheel", onWheel, { passive: true });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      clearTimeout(settle);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [ref]);
+}
+
 /* ═══════════ 壳 ═══════════ */
 function App() {
   const [splash, setSplash] = useState(true);
   const [state, setState] = useState(null);
   const [meta, setMeta] = useState({});
   const [notice, setNotice] = useState(false);
+  const contentRef = useRef(null);
+  useElasticScroll(contentRef);
   const [updateInfo, setUpdateInfo] = useState(null);
   const updateChecked = useRef(false);
   const [guideSeen, setGuideSeen] = useState(() => {
@@ -1824,7 +1934,7 @@ function App() {
     }).catch(() => {});
   }, [meta.updateSource?.source, toast]);
 
-  const go = (id) => {
+  const go = useCallback((id) => {
     const a = NAV.findIndex((n) => n.id === view);
     const b = NAV.findIndex((n) => n.id === id);
     setDir(b >= a ? 1 : -1);
@@ -1833,7 +1943,7 @@ function App() {
       setGuideSeen(true);
       try { localStorage.setItem("xr.guide.seen", "1"); } catch {}
     }
-  };
+  }, [view, guideSeen]);
 
   if (splash) return <><VideoBg /><Splash onDone={() => setSplash(false)} /></>;
   if (!state) return <><VideoBg /><div className="loading">加载中…</div></>;
@@ -1867,7 +1977,7 @@ function App() {
 
         <div className="shell">
           <Sidebar view={view} onGo={go} state={state} manifest={meta.manifest} guideSeen={guideSeen} hasUpdate={!!updateInfo?.hasUpdate} />
-          <main className="content">
+          <main className="content" ref={contentRef}>
             <div className="pager" key={view} style={{ "--dir": dir }}>
               {PAGES[view]}
             </div>
