@@ -1,0 +1,71 @@
+/* 果冻玻璃材质（Jelly Glass）
+   高透明度 + 强模糊 + 多色折射光 + Q弹回弹
+   降级策略：@supports 检测 + .no-backdrop JS 标记 */
+
+.glass {
+  position: relative;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(1.06);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(1.06);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card), var(--glass-inset);
+  transition: transform var(--dur) var(--ease-spring),
+              box-shadow var(--dur) var(--ease);
+}
+
+.glass-strong {
+  background: var(--glass-fill-strong);
+}
+
+.glass-pink {
+  background: var(--glass-fill-pink);
+  border-color: rgba(255, 179, 205, 0.35);
+}
+
+/* 果冻高光：大面积漫射光 + 顶部光带 + 边缘色散 */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(140% 90% at 15% -10%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0) 50%),
+    radial-gradient(100% 60% at 85% 110%,
+      var(--c-jelly-blue) 0%,
+      transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 40%);
+}
+
+.glass-pink::before {
+  background:
+    radial-gradient(140% 90% at 15% -10%,
+      rgba(255, 179, 205, 0.4) 0%,
+      rgba(255, 179, 205, 0) 50%),
+    radial-gradient(100% 60% at 85% 110%,
+      var(--c-jelly-purple) 0%,
+      transparent 60%),
+    linear-gradient(180deg, rgba(255, 200, 220, 0.25) 0%, rgba(255, 255, 255, 0) 40%);
+}
+
+/* 果冻弹性：悬停时轻微膨胀 + 柔光增强 */
+.glass:hover {
+  box-shadow: var(--sh-pop), var(--glass-inset);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .glass, .glass-strong, .glass-pink {
+    background: var(--glass-fallback);
+  }
+}
+
+html.no-backdrop .glass,
+html.no-backdrop .glass-strong,
+html.no-backdrop .glass-pink {
+  background: var(--glass-fallback);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}

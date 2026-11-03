@@ -1,0 +1,35 @@
+# 依赖与构建产物
+node_modules/
+dist/
+src-tauri/target/
+
+# 插件包（81MB 第三方二进制，不进仓库；构建前自行准备）
+src-tauri/resources/CS2BotImprover.zip
+
+# 安装包
+*.exe
+!src-tauri/icons/**/*.exe
+
+# 构建日志
+*.log
+tauri-build*.log
+stderr.log
+stdout.log
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地临时
+*.tmp
+*.bak
+
+# 版权素材：背景音乐与背景视频（第三方版权，不入公开仓库）
+src/assets/bgm.mp3
+src/assets/bg.mp4
+
+# 本地运行数据
+data/
