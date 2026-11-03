@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.4.1";
+const VER = "v2.5.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,21 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.4.1",
+    v: "v2.5.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "卸载改为彻底删除，游戏目录里不再堆积备份（此前已堆积 854MB）",
+      "卸载自动还原被覆盖的官方原文件，Steam 不再提示「需要更新下载内容」",
+      "安装时把官方原文件快照到 %LOCALAPPDATA%\\XueRongCS2\\pristine（游戏目录外）",
+      "清单校验区分官方文件与插件文件，未安装时显示「未安装（干净状态）」",
+      "安装失败时给出权限提示，不再只报一行英文错误",
+    ],
+  },
+  {
+    v: "v2.4.1",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "内置更新仓库，装完直接能检查更新，不用手填任何链接",
       "更新源输入框改为可选覆盖，留空即用内置地址",
@@ -398,10 +410,19 @@ function Home({ state, meta, refresh, softRefresh, toast }) {
 
       <section className="card card--hero">
         <div className="hero__row">
-          <div className={`hero__dot ${m?.ok ? "is-ok" : m ? "is-bad" : ""}`} />
+          <div className={`hero__dot ${m?.clean ? "is-idle" : m?.ok ? "is-ok" : m ? "is-bad" : ""}`} />
           <div className="hero__txt">
-            <b>{m ? (m.ok ? "插件全部就位" : `缺 ${m.missing.length} 项`) : "正在校验…"}</b>
-            <span>{m ? `${m.present}/${m.total} 项 · 图标资源 ${m.iconCount || 0} 个` : "读取安装清单"}</span>
+            <b>
+              {!m ? "正在校验…"
+                : m.clean ? "未安装（干净状态）"
+                : m.ok ? "插件全部就位"
+                : `缺 ${m.modMissing ?? m.missing.length} 项插件文件`}
+            </b>
+            <span>
+              {!m ? "读取安装清单"
+                : m.clean ? `55 项检查里，${m.officialTotal} 项是游戏原文件（本就存在），${m.modTotal + 4} 项是插件文件`
+                : `插件 ${m.modPresent}/${m.modTotal} · 官方文件 ${m.officialPresent}/${m.officialTotal} · 图标 ${m.iconCount || 0} 个`}
+            </span>
           </div>
           <button className="btn btn--ghost btn--sm" onClick={() => refresh()}>{I.refresh(14)} 重检</button>
         </div>
@@ -411,11 +432,17 @@ function Home({ state, meta, refresh, softRefresh, toast }) {
             <code>{m.misplaced}</code>
           </div>
         )}
-        {m && !m.ok && m.missing.length > 0 && (
+        {m && !m.ok && !m.clean && m.missing.length > 0 && (
           <details className="alert alert--bad">
             <summary>缺失明细（{m.missing.length}）</summary>
             <ul>{m.missing.slice(0, 30).map((x, i) => <li key={i}><code>{x}</code></li>)}</ul>
           </details>
+        )}
+        {m && m.clean && (
+          <p className="note">
+            这 55 项里，{m.officialTotal} 项（gameinfo.gi 和 14 个 gamemode 配置）是 Steam 自带的原文件，永远都在，不需要删；
+            另外 {m.modTotal + 4} 项是插件文件，装完才会有。点下面的「安装 / 修复套件」开始装。
+          </p>
         )}
       </section>
 
@@ -498,10 +525,20 @@ function Home({ state, meta, refresh, softRefresh, toast }) {
           }}>重新下发配置</button>
         </div>
         <button className="btn btn--danger btn--block" style={{ marginTop: 10 }} onClick={async () => {
-          if (!confirm("卸载全部插件并还原到纯净状态？文件会整体移动到备份目录，不删除。")) return;
+          if (!confirm("彻底删除全部插件？\n\n会直接删掉 addons / overrides / 图标资源，不留备份。\n被覆盖的官方原文件会自动还原，Steam 不会要求重新下载。\n\n删除后要恢复，重新点「安装 / 修复套件」即可。")) return;
           const r = await api.uninstall();
-          if (r.success) { await refresh(); toast("已还原"); } else toast(r.error || "失败", "err");
-        }}>{I.trash(13)} 一键卸载还原</button>
+          if (r.error) return toast(r.error, "err");
+          await refresh();
+          if (r.success) {
+            const n = (r.removed || []).length;
+            toast(`已彻底删除 ${n} 项，还原 ${r.restored ?? 0} 个官方文件`);
+            if (r.needsVerify) {
+              toast("没有官方文件快照，请在 Steam 里验证一次游戏文件完整性", "err");
+            }
+          } else {
+            toast(`部分失败：${(r.failed || []).join("; ")}`, "err");
+          }
+        }}>{I.trash(13)} 彻底删除插件</button>
       </section>
 
       <section className="card card--tight">

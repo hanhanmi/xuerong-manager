@@ -646,6 +646,59 @@ fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// 官方原文件快照目录：放在游戏目录之外，避免污染游戏文件夹
+fn pristine_dir() -> PathBuf {
+    dirs::data_local_dir()
+        .unwrap_or_else(std::env::temp_dir)
+        .join("XueRongCS2")
+        .join("pristine")
+}
+
+/// 安装前把「即将被覆盖的官方原文件」存一份到游戏目录外。
+/// 只存已存在的文件（新增文件无需快照），且只存第一次（不重复覆盖）。
+fn snapshot_official_files(temp_dir: &Path, game_dir: &Path) -> usize {
+    let pdir = pristine_dir();
+    let mut n = 0usize;
+    for entry in walkdir::WalkDir::new(temp_dir).max_depth(6).into_iter().flatten() {
+        if !entry.file_type().is_file() { continue; }
+        let Ok(rel) = entry.path().strip_prefix(temp_dir) else { continue };
+        let target = game_dir.join(rel);
+        if !target.is_file() { continue; }
+        let saved = pdir.join(rel);
+        if saved.is_file() { continue; }
+        if let Some(parent) = saved.parent() { let _ = fs::create_dir_all(parent); }
+        if fs::copy(&target, &saved).is_ok() { n += 1; }
+    }
+    n
+}
+
+/// 卸载时把官方原文件还原回去（Steam 才不会提示「需要更新下载内容」）
+fn restore_official_files(game_dir: &Path) -> usize {
+    let pdir = pristine_dir();
+    if !pdir.is_dir() { return 0; }
+    let mut n = 0usize;
+    for entry in walkdir::WalkDir::new(&pdir).max_depth(6).into_iter().flatten() {
+        if !entry.file_type().is_file() { continue; }
+        let Ok(rel) = entry.path().strip_prefix(&pdir) else { continue };
+        let target = game_dir.join(rel);
+        if let Some(parent) = target.parent() { let _ = fs::create_dir_all(parent); }
+        if fs::copy(entry.path(), &target).is_ok() { n += 1; }
+    }
+    n
+}
+
+/// 只有整个目录都是 .vsvg_c 时才认定是我们加的图标资源，避免误删官方内容
+fn is_our_icon_dir(dir: &Path) -> bool {
+    if !dir.is_dir() { return false; }
+    let mut any = false;
+    for e in walkdir::WalkDir::new(dir).into_iter().flatten() {
+        if !e.file_type().is_file() { continue; }
+        any = true;
+        if !e.file_name().to_string_lossy().ends_with(".vsvg_c") { return false; }
+    }
+    any
+}
+
 fn install_plugins(cs2_path: &str, resources_dir: &Path, premier: &PremierConfig) -> Result<Value, String> {
     if cs2_path.is_empty() {
         return Err("未设置 CS2 安装路径".into());
@@ -662,6 +715,19 @@ fn install_plugins(cs2_path: &str, resources_dir: &Path, premier: &PremierConfig
     fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
 
     extract_zip(&zip_path, &temp_dir)?;
+
+    // 覆盖前先把官方原文件存到游戏目录外，卸载时用它还原
+    let snap = snapshot_official_files(&temp_dir, &game_dir);
+    // 兜底：如果快照到的 gameinfo 已经被改过（老版本装过），用整合包自带的官方版覆盖
+    {
+        let pgi = pristine_dir().join("gameinfo.gi");
+        if let Ok(t) = fs::read_to_string(&pgi) {
+            if t.contains("csgo/addons/metamod") {
+                let src = temp_dir.join("backup").join("Online").join("gameinfo.gi");
+                if src.is_file() { let _ = fs::copy(&src, &pgi); }
+            }
+        }
+    }
 
     // 备份原有目录（放到游戏根目录下，不污染 game/）
     let stamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
@@ -692,6 +758,7 @@ fn install_plugins(cs2_path: &str, resources_dir: &Path, premier: &PremierConfig
     Ok(serde_json::json!({
         "success": true,
         "copied": copied,
+        "snapshot": snap,
         "installPath": cs2_path,
     }))
 }
@@ -909,13 +976,28 @@ fn install(app: TauriState<'_, AppState>, cs2_path: Option<String>) -> Value {
                 "installPath": target,
             })
         }
-        Err(e) => serde_json::json!({ "error": e }),
+        Err(e) => {
+            let low = e.to_lowercase();
+            let hint = if low.contains("os error 5")
+                || e.contains("拒绝访问")
+                || low.contains("access is denied")
+                || low.contains("permission denied")
+            {
+                "\n\n原因：游戏目录没有写入权限。Steam 装在 C:////Program Files 下时常见。\n解决办法：右键管理器 → 以管理员身份运行，或把 Steam 库移到非系统盘。"
+            } else {
+                ""
+            };
+            serde_json::json!({ "error": format!("{}{}", e, hint) })
+        }
     }
 }
 
 #[tauri::command(async)]
 fn uninstall(app: TauriState<'_, AppState>) -> Value {
-    let cs2_path = { app.inner.lock().unwrap().cs2_path.clone() };
+    let cs2_path = {
+        let s = app.inner.lock().unwrap();
+        if !s.cs2_path.is_empty() { s.cs2_path.clone() } else { s.auto_detected_path.clone() }
+    };
     if cs2_path.is_empty() {
         return serde_json::json!({ "error": "未设置 CS2 路径" });
     }
@@ -923,57 +1005,89 @@ fn uninstall(app: TauriState<'_, AppState>) -> Value {
         return serde_json::json!({ "error": "CS2 正在运行，请先退出游戏再卸载" });
     }
 
-    // 注意：插件真实路径是 game/csgo/addons，不是 game/addons
     let csgo = csgo_dir(&cs2_path);
-    let addons = csgo.join("addons");
-    let overrides = csgo.join("overrides");
-    let stamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
-    let backup_root = Path::new(&cs2_path)
-        .join("_xuerong_backup")
-        .join(format!("uninstall_{}", stamp));
 
-    // 先把 gameinfo 还原成官方态（只摘掉自己加的两行，保护语言段）
-    let gi_result = patch_gameinfo(&cs2_path, false);
+    // 兜底用：整合包自带的官方 gameinfo 快照（删 backup 目录前先读出来）
+    let fallback_gi = fs::read(csgo.join("backup").join("Online").join("gameinfo.gi")).ok();
 
-    // 目标目录必须先建出来，否则 rename 会因父目录不存在而失败（之前就是这么静默失败的）
-    if let Err(e) = fs::create_dir_all(&backup_root) {
-        return serde_json::json!({ "error": format!("创建备份目录失败: {}", e) });
-    }
-
-    let mut moved: Vec<String> = Vec::new();
-    let mut errors: Vec<String> = Vec::new();
-    for (src, name) in [(&addons, "addons"), (&overrides, "overrides")] {
-        if !src.exists() { continue; }
-        let dst = backup_root.join(name);
-        match fs::rename(src, &dst) {
-            Ok(_) => moved.push(name.to_string()),
-            Err(e) => errors.push(format!("{}: {}", name, e)),
+    // ① 彻底删除插件目录（不留备份，游戏目录里不再堆积）
+    let mut removed: Vec<String> = Vec::new();
+    let mut failed: Vec<String> = Vec::new();
+    for rel in ["addons", "overrides", "backup"] {
+        let p = csgo.join(rel);
+        if !p.exists() { continue; }
+        match fs::remove_dir_all(&p) {
+            Ok(_) => removed.push(rel.to_string()),
+            Err(e) => failed.push(format!("{}: {}", rel, e)),
         }
     }
 
-    if !errors.is_empty() {
-        return serde_json::json!({
-            "error": format!("部分文件移动失败（游戏可能仍占用文件）：{}", errors.join("; ")),
-            "moved": moved,
-        });
+    // ② 击杀图标资源：只有整个目录都是 .vsvg_c 才删，避免误删官方内容
+    let icons = csgo.join("panorama").join("images").join("icons").join("equipment");
+    if is_our_icon_dir(&icons) {
+        match fs::remove_dir_all(&icons) {
+            Ok(_) => removed.push("panorama/images/icons/equipment".to_string()),
+            Err(e) => failed.push(format!("panorama icons: {}", e)),
+        }
     }
 
+    // ③ 删管理器自己生成的 cfg
+    for name in [MGR_CFG, "cs2manager.cfg"] {
+        let p = csgo.join("cfg").join(name);
+        if p.is_file() && fs::remove_file(&p).is_ok() {
+            removed.push(format!("cfg/{}", name));
+        }
+    }
+
+    // ④ 清 autoexec 里的标记段（保留玩家自己的内容）
+    let auto = csgo.join("cfg").join("autoexec.cfg");
+    if let Ok(text) = fs::read_to_string(&auto) {
+        let re = regex::Regex::new(&format!(
+            r"(?s){}.*?{}[ \t]*\r?\n?",
+            regex::escape(AUTOEXEC_BEGIN),
+            regex::escape(AUTOEXEC_END)
+        )).unwrap();
+        let out = re.replace_all(&text, "").to_string();
+        if out.trim().is_empty() {
+            let _ = fs::remove_file(&auto);
+        } else {
+            let _ = fs::write(&auto, out);
+        }
+    }
+
+    // ⑤ 还原被覆盖的官方原文件（这是 Steam 不再提示「需要更新」的关键）
+    let restored = restore_official_files(&csgo);
+
+    // ⑥ gameinfo 兜底：快照里没有就用整合包自带的官方版
+    let has_pristine = pristine_dir().join("gameinfo.gi").is_file();
+    let gi = csgo.join("gameinfo.gi");
+    if !has_pristine {
+        if let Some(bytes) = fallback_gi {
+            let _ = fs::write(&gi, bytes);
+        }
+    }
+    // 最后再摘一次 metamod 两行，确保干净
+    let gi_result = patch_gameinfo(&cs2_path, false);
+
+    // ⑦ 重置状态
     let mut s = app.inner.lock().unwrap();
     for p in catalog() {
         let entry = s.plugins.entry(p.id.clone()).or_default();
         entry.installed = false;
-        if !p.always_on {
-            entry.enabled = false;
-        }
+        if !p.always_on { entry.enabled = false; }
     }
     s.install_date = None;
+    s.skin_only = false;
     let _ = app.save(&s);
 
     serde_json::json!({
-        "success": true,
-        "moved": moved,
-        "backupDir": backup_root.to_string_lossy(),
+        "success": failed.is_empty(),
+        "removed": removed,
+        "restored": restored,
+        "failed": failed,
         "gameinfo": gi_result.err().unwrap_or_else(|| "ok".into()),
+        // 没有官方文件快照时，gamemode 配置仍是整合包版本，需要 Steam 验证一次才能完全复原
+        "needsVerify": !has_pristine,
     })
 }
 
@@ -2156,58 +2270,60 @@ fn set_skin_mode(app: TauriState<'_, AppState>, enabled: bool) -> Value {
 
 // ── 清单校验（照搬 Panel validate_files 的五字段契约） ──
 
-const MANIFEST_FILES: [&str; 51] = [
-    "addons/BotController/bin/win64/BotController.dll",
-    "addons/BotHider/bin/win64/BotHider.dll",
-    "addons/BotVision/bin/win64/BotVision.dll",
-    "addons/counterstrikesharp/plugins/BotAI/BotAI.dll",
-    "addons/counterstrikesharp/plugins/BotAimImprover/BotAimImprover.dll",
-    "addons/counterstrikesharp/plugins/BotBuy/BotBuy.dll",
-    "addons/counterstrikesharp/plugins/BotControllerImpl/BotControllerImpl.dll",
-    "addons/counterstrikesharp/plugins/BotHiderImpl/BotHiderImpl.dll",
-    "addons/counterstrikesharp/plugins/BotRandomizer/BotRandomizer.dll",
-    "addons/counterstrikesharp/plugins/BotState/BotState.dll",
-    "addons/counterstrikesharp/plugins/NadeSystem/NadeSystem.dll",
-    "addons/counterstrikesharp/plugins/RoundDamageRecap/RoundDamageRecap.dll",
-    "addons/counterstrikesharp/shared/0Harmony/0Harmony.dll",
-    "addons/counterstrikesharp/shared/BotControllerApi/BotControllerApi.dll",
-    "addons/counterstrikesharp/shared/BotHiderApi/BotHiderApi.dll",
-    "addons/metamod/BotController.vdf",
-    "addons/metamod/BotHider.vdf",
-    "addons/metamod/BotVision.vdf",
-    "backup/Online/gameinfo.gi",
-    "backup/WithBots/gameinfo.gi",
-    "cfg/bot_buy.cfg",
-    "cfg/gamemode_armsrace.cfg",
-    "cfg/gamemode_casual.cfg",
-    "cfg/gamemode_competitive.cfg",
-    "cfg/gamemode_competitive2v2.cfg",
-    "cfg/gamemode_competitive2v2_offline.cfg",
-    "cfg/gamemode_competitive_offline.cfg",
-    "cfg/gamemode_custom.cfg",
-    "cfg/gamemode_deathmatch.cfg",
-    "cfg/gamemode_dm_freeforall.cfg",
-    "cfg/gamemode_retakecasual.cfg",
-    "cfg/gamemode_rush.cfg",
-    "cfg/gamemode_rush_offline.cfg",
-    "cfg/gamemode_teamdeathmatch.cfg",
-    "cfg/gamemode_workshop.cfg",
-    "cfg/my_bot_ffa_config.cfg",
-    "cfg/my_bot_normal_config.cfg",
-    "cfg/my_bot_rush_config.cfg",
-    "gameinfo.gi",
-    "overrides/High/botprofile.vpk",
-    "overrides/Low/botprofile.vpk",
-    "overrides/Medium/botprofile.vpk",
-    "overrides/botprofile.vpk",
-    "addons/counterstrikesharp/plugins/Killfeed_Icons/Killfeed_Icons.dll",
-    "addons/counterstrikesharp/plugins/InventorySimulator/InventorySimulator.dll",
-    "addons/counterstrikesharp/plugins/PremierBadgeMvp/PremierBadgeMvp.dll",
-    "addons/counterstrikesharp/plugins/PremierBadgeMvp/config.json",
-    "addons/counterstrikesharp/configs/plugins/Killfeed_Icons/Killfeed_Icons.json",
-    "addons/counterstrikesharp/configs/core.json",
-    "addons/metamod/metaplugins.ini",
-    "addons/metamod/counterstrikesharp.vdf",
+/// (相对路径, 是否官方游戏原文件)
+/// 官方文件卸载时不能删，只能还原；其余都是插件文件，卸载直接删。
+const MANIFEST_FILES: [(&str, bool); 51] = [
+    ("addons/BotController/bin/win64/BotController.dll", false),
+    ("addons/BotHider/bin/win64/BotHider.dll", false),
+    ("addons/BotVision/bin/win64/BotVision.dll", false),
+    ("addons/counterstrikesharp/plugins/BotAI/BotAI.dll", false),
+    ("addons/counterstrikesharp/plugins/BotAimImprover/BotAimImprover.dll", false),
+    ("addons/counterstrikesharp/plugins/BotBuy/BotBuy.dll", false),
+    ("addons/counterstrikesharp/plugins/BotControllerImpl/BotControllerImpl.dll", false),
+    ("addons/counterstrikesharp/plugins/BotHiderImpl/BotHiderImpl.dll", false),
+    ("addons/counterstrikesharp/plugins/BotRandomizer/BotRandomizer.dll", false),
+    ("addons/counterstrikesharp/plugins/BotState/BotState.dll", false),
+    ("addons/counterstrikesharp/plugins/NadeSystem/NadeSystem.dll", false),
+    ("addons/counterstrikesharp/plugins/RoundDamageRecap/RoundDamageRecap.dll", false),
+    ("addons/counterstrikesharp/shared/0Harmony/0Harmony.dll", false),
+    ("addons/counterstrikesharp/shared/BotControllerApi/BotControllerApi.dll", false),
+    ("addons/counterstrikesharp/shared/BotHiderApi/BotHiderApi.dll", false),
+    ("addons/metamod/BotController.vdf", false),
+    ("addons/metamod/BotHider.vdf", false),
+    ("addons/metamod/BotVision.vdf", false),
+    ("backup/Online/gameinfo.gi", false),
+    ("backup/WithBots/gameinfo.gi", false),
+    ("cfg/bot_buy.cfg", false),
+    ("cfg/gamemode_armsrace.cfg", true),
+    ("cfg/gamemode_casual.cfg", true),
+    ("cfg/gamemode_competitive.cfg", true),
+    ("cfg/gamemode_competitive2v2.cfg", true),
+    ("cfg/gamemode_competitive2v2_offline.cfg", true),
+    ("cfg/gamemode_competitive_offline.cfg", true),
+    ("cfg/gamemode_custom.cfg", true),
+    ("cfg/gamemode_deathmatch.cfg", true),
+    ("cfg/gamemode_dm_freeforall.cfg", true),
+    ("cfg/gamemode_retakecasual.cfg", true),
+    ("cfg/gamemode_rush.cfg", true),
+    ("cfg/gamemode_rush_offline.cfg", true),
+    ("cfg/gamemode_teamdeathmatch.cfg", true),
+    ("cfg/gamemode_workshop.cfg", true),
+    ("cfg/my_bot_ffa_config.cfg", false),
+    ("cfg/my_bot_normal_config.cfg", false),
+    ("cfg/my_bot_rush_config.cfg", false),
+    ("gameinfo.gi", true),
+    ("overrides/High/botprofile.vpk", false),
+    ("overrides/Low/botprofile.vpk", false),
+    ("overrides/Medium/botprofile.vpk", false),
+    ("overrides/botprofile.vpk", false),
+    ("addons/counterstrikesharp/plugins/Killfeed_Icons/Killfeed_Icons.dll", false),
+    ("addons/counterstrikesharp/plugins/InventorySimulator/InventorySimulator.dll", false),
+    ("addons/counterstrikesharp/plugins/PremierBadgeMvp/PremierBadgeMvp.dll", false),
+    ("addons/counterstrikesharp/plugins/PremierBadgeMvp/config.json", false),
+    ("addons/counterstrikesharp/configs/plugins/Killfeed_Icons/Killfeed_Icons.json", false),
+    ("addons/counterstrikesharp/configs/core.json", false),
+    ("addons/metamod/metaplugins.ini", false),
+    ("addons/metamod/counterstrikesharp.vdf", false),
 ];
 
 #[tauri::command(async)]
@@ -2222,7 +2338,16 @@ fn validate_manifest(app: TauriState<'_, AppState>) -> Value {
     let mut missing: Vec<String> = Vec::new();
     let mut disabled: Vec<String> = Vec::new();
     let mut present = 0usize;
-    for rel in MANIFEST_FILES {
+    let mut mod_total = 0usize;
+    let mut mod_present = 0usize;
+    let mut official_present = 0usize;
+    for (rel, is_official) in MANIFEST_FILES {
+        if !is_official { mod_total += 1; }
+        let hit = if base.join(rel).is_file() {
+            true
+        } else { base.join(format!("{}.off", rel)).is_file() };
+        if hit && is_official { official_present += 1; }
+        if hit && !is_official { mod_present += 1; }
         if base.join(rel).is_file() {
             present += 1;
         } else if base.join(format!("{}.off", rel)).is_file() {
@@ -2287,6 +2412,9 @@ fn validate_manifest(app: TauriState<'_, AppState>) -> Value {
     }
 
     let total = MANIFEST_FILES.len() + 4;
+    let official_total = MANIFEST_FILES.iter().filter(|(_, o)| *o).count();
+    // 干净状态：插件目录整个不存在，说明是没装（而不是装坏了）
+    let clean = !base.join("addons").is_dir();
     serde_json::json!({
         "ok": missing.is_empty(),
         "total": total,
@@ -2296,6 +2424,13 @@ fn validate_manifest(app: TauriState<'_, AppState>) -> Value {
         "misplaced": misplaced,
         "iconCount": icon_count,
         "cs2Running": is_cs2_running(),
+        // 分类计数：让界面能解释「剩下的都是官方文件，不是没删干净」
+        "officialTotal": official_total,
+        "officialPresent": official_present,
+        "modTotal": mod_total,
+        "modPresent": mod_present,
+        "modMissing": mod_total.saturating_sub(mod_present),
+        "clean": clean,
     })
 }
 
