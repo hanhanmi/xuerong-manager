@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.3.0";
+const VER = "v2.4.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,21 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.3.0",
+    v: "v2.4.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "新增一键自动更新：点「立即更新」自动下载并静默安装",
+      "下载过程显示进度条与已下载体积，装完自动重启",
+      "更新源收进「高级」折叠区，填一次即可，不用再手动贴链接",
+      "下载完整性校验：拦截错误页与半截文件",
+      "新增 THIRD-PARTY.md，完整标注第三方组件出处与授权",
+    ],
+  },
+  {
+    v: "v2.3.0",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "新增软件内检查更新：设置页填更新源即可",
       "支持 GitHub Releases（github:用户名/仓库名），不用自己写 JSON",
