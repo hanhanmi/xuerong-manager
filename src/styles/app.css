@@ -1296,3 +1296,11 @@ body {
   user-select: none;
 }
 .adv summary:hover { color: var(--c-purple-deep); }
+
+/* ═══════════ 命令页分类标签 ═══════════ */
+.seg--wrap { flex-wrap: wrap; }
+.seg--wrap button {
+  flex: 1 1 auto;
+  min-width: 82px;
+  white-space: nowrap;
+}

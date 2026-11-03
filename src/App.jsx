@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.7.0";
+const VER = "v2.8.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,20 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.7.0",
+    v: "v2.8.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "命令库从 15 条扩到 68 条",
+      "按联机 / 人机 / 规则 / 显示 / 插件五类分组",
+      "支持关键词搜索，输入 status、联机、难度都能过滤",
+      "补上 status、connect、sv_lan、kick、say 等联机常用指令",
+    ],
+  },
+  {
+    v: "v2.7.0",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "自动更新支持国内加速镜像：官方不通会自动换 4 个源重试",
       "下载停滞 20 秒自动判定超时并切换下一个源，不再卡死",
@@ -1129,46 +1140,172 @@ function Guide({ go, meta, refresh, toast, openNotice }) {
 }
 
 /* ═══════════ 页：命令 ═══════════ */
-const CMDS = [
-  { cmd: "exec my_bot_normal_config", desc: "加载常规人机预设（规则 + bot_randomizer 全在这份里）" },
-  { cmd: "exec my_bot_ffa_config", desc: "加载死斗预设" },
-  { cmd: "exec my_bot_rush_config", desc: "加载 rush 预设" },
-  { cmd: "bot_aim head", desc: "瞄准锁头（mixed / body）" },
-  { cmd: "bot_nades max", desc: "投掷物拉满（off / less / normal / more / max）" },
-  { cmd: "bot_randomizer weapons 1", desc: "开关 bot 武器皮肤（knives/gloves/stickers/charms/agents/music 同理）" },
-  { cmd: "css_badge_mvp status", desc: "查看 XP 徽章 / MVP 名片当前状态" },
-  { cmd: "css_badge_mvp rt 11", desc: "直接改 RankType，≥11 触发动态 MVP" },
-  { cmd: "!weaponkill", desc: "击杀图标选包菜单" },
-  { cmd: "!3", desc: "选第 3 套击杀图标（编号 1–18）" },
-  { cmd: "bot_add_t", desc: "加一个 T 人机" },
-  { cmd: "bot_kick", desc: "踢掉所有人机" },
-  { cmd: "bot_stop 1", desc: "冻结人机移动（调试用）" },
-  { cmd: "sv_cheats 1", desc: "开作弊（部分命令需要）" },
-  { cmd: "mp_c4timer 40", desc: "C4 倒计时秒数" },
+const CMD_GROUPS = [
+  {
+    key: "net",
+    label: "联机 / 服务器",
+    items: [
+      { cmd: "status", desc: "看服务器状态、所有玩家、IP 和端口" },
+      { cmd: "connect 192.168.1.10:27015", desc: "直连服务器，把 IP 换成房主的" },
+      { cmd: "disconnect", desc: "断开当前服务器" },
+      { cmd: "reconnect", desc: "重连上一次进的服务器" },
+      { cmd: "sv_lan 1", desc: "切成局域网模式，同路由器的人更容易连上" },
+      { cmd: "sv_password 1234", desc: "给房间设密码" },
+      { cmd: "sv_password \"\"", desc: "取消房间密码" },
+      { cmd: "hostname 我的房间", desc: "改房间名，服务器列表里显示这个" },
+      { cmd: "map de_dust2", desc: "换图，会重开一局" },
+      { cmd: "changelevel de_mirage", desc: "换图，保留比分和金钱" },
+      { cmd: "mp_restartgame 1", desc: "1 秒后重开当前这局" },
+      { cmd: "mp_warmup_end", desc: "立刻结束热身，直接开打" },
+      { cmd: "kick 玩家名", desc: "踢人，房主才能用" },
+      { cmd: "say 大家好", desc: "全体发言" },
+      { cmd: "say_team 集合 B 点", desc: "队内发言" },
+    ],
+  },
+  {
+    key: "bot",
+    label: "人机控制",
+    items: [
+      { cmd: "bot_add", desc: "加一个 bot，自动平衡队伍" },
+      { cmd: "bot_add_t", desc: "给 T 方加一个 bot" },
+      { cmd: "bot_add_ct", desc: "给 CT 方加一个 bot" },
+      { cmd: "bot_kick", desc: "踢掉场上所有 bot" },
+      { cmd: "bot_kill", desc: "杀死所有 bot" },
+      { cmd: "bot_stop 1", desc: "冻结 bot 移动，调试用" },
+      { cmd: "bot_stop 0", desc: "解除冻结" },
+      { cmd: "bot_difficulty 3", desc: "bot 难度 0–5，数字越大越强" },
+      { cmd: "bot_quota 10", desc: "场上保持多少个 bot" },
+      { cmd: "bot_quota_mode fill", desc: "补满模式：人不够时自动补 bot" },
+      { cmd: "bot_mimic 1", desc: "bot 模仿你的动作" },
+      { cmd: "bot_place", desc: "在准星位置放一个 bot" },
+      { cmd: "bot_crouch 1", desc: "所有 bot 蹲下" },
+      { cmd: "bot_zombie 1", desc: "bot 不移动也不还手" },
+      { cmd: "bot_dont_shoot 1", desc: "bot 不开枪" },
+    ],
+  },
+  {
+    key: "rule",
+    label: "对局规则",
+    items: [
+      { cmd: "mp_freezetime 5", desc: "开局冻结时间，秒" },
+      { cmd: "mp_roundtime 1.92", desc: "每回合时长，分钟" },
+      { cmd: "mp_maxrounds 24", desc: "最多打多少回合" },
+      { cmd: "mp_startmoney 800", desc: "初始金钱" },
+      { cmd: "mp_buytime 20", desc: "购买时间，秒" },
+      { cmd: "mp_buy_anywhere 1", desc: "允许在任意位置购买" },
+      { cmd: "mp_friendlyfire 0", desc: "友军伤害，0 关 1 开" },
+      { cmd: "mp_autoteambalance 0", desc: "自动平衡队伍，人机局建议关" },
+      { cmd: "mp_limitteams 0", desc: "队伍人数差限制，0 = 不限" },
+      { cmd: "mp_c4timer 40", desc: "C4 倒计时，秒" },
+      { cmd: "mp_overtime_enable 1", desc: "打平后进加时" },
+      { cmd: "mp_halftime 1", desc: "半场换边" },
+      { cmd: "mp_solid_enemies 0", desc: "敌人可否互相穿过，0 = 可穿 = 能叠人" },
+      { cmd: "mp_solid_teammates 2", desc: "队友碰撞，2 = 可叠" },
+      { cmd: "mp_drop_knife_enable 1", desc: "允许丢刀" },
+      { cmd: "mp_spectators_max 4", desc: "最多几个观战" },
+    ],
+  },
+  {
+    key: "show",
+    label: "显示 / 调试",
+    items: [
+      { cmd: "cl_showfps 1", desc: "左上角显示帧率" },
+      { cmd: "cq_netgraph 1", desc: "显示网络参数图（丢包、延迟）" },
+      { cmd: "cl_showpos 1", desc: "显示坐标和移动速度" },
+      { cmd: "sensitivity 2", desc: "鼠标灵敏度" },
+      { cmd: "cl_crosshairsize 3", desc: "准星大小" },
+      { cmd: "cl_radar_scale 0.35", desc: "雷达缩放，越小看得越远" },
+      { cmd: "voice_scale 0.5", desc: "队友语音音量" },
+      { cmd: "sv_cheats 1", desc: "开作弊模式，noclip 和 god 需要它" },
+      { cmd: "noclip", desc: "穿墙飞行（要 sv_cheats 1）" },
+      { cmd: "god", desc: "无敌（要 sv_cheats 1）" },
+      { cmd: "demoui", desc: "录像播放控制台" },
+    ],
+  },
+  {
+    key: "plugin",
+    label: "插件命令",
+    items: [
+      { cmd: "exec my_bot_normal_config", desc: "加载常规人机预设，规则和饰品随机全在这份里" },
+      { cmd: "exec my_bot_ffa_config", desc: "加载死斗预设" },
+      { cmd: "exec my_bot_rush_config", desc: "加载 rush 预设" },
+      { cmd: "exec xuerong_manager", desc: "只应用管理器里设的规则，不动预设" },
+      { cmd: "bot_aim head", desc: "人机瞄准锁头（mixed / body）" },
+      { cmd: "bot_nades max", desc: "投掷物拉满（off / less / normal / more / max）" },
+      { cmd: "bot_randomizer weapons 1", desc: "开 bot 武器皮肤（knives/gloves/stickers/charms/agents/music 同理）" },
+      { cmd: "css_badge_mvp status", desc: "查看 XP 徽章和 MVP 名片当前状态" },
+      { cmd: "css_badge_mvp rt 11", desc: "直接改 RankType，≥11 触发动态 MVP" },
+      { cmd: "!weaponkill", desc: "打开击杀图标选包菜单" },
+      { cmd: "!3", desc: "选第 3 套击杀图标，编号 1–18" },
+    ],
+  },
 ];
 
 function Commands({ toast }) {
+  const [tab, setTab] = useState("all");
+  const [q, setQ] = useState("");
+
+  const all = CMD_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.key, groupLabel: g.label })));
+  const kw = q.trim().toLowerCase();
+  const list = all.filter((i) => {
+    if (tab !== "all" && i.group !== tab) return false;
+    if (!kw) return true;
+    return i.cmd.toLowerCase().includes(kw) || i.desc.toLowerCase().includes(kw);
+  });
+
+  const tabs = [{ key: "all", label: `全部 ${all.length}` }].concat(
+    CMD_GROUPS.map((g) => ({ key: g.key, label: g.label }))
+  );
+
+  const copy = async (cmd) => {
+    try { await navigator.clipboard.writeText(cmd); toast(`已复制 ${cmd}`); }
+    catch { toast("复制失败，手动输入", "err"); }
+  };
+
   return (
     <div className="page">
       <header className="page__head">
         <h1>命令</h1>
-        <p>点一下复制，进游戏控制台粘贴</p>
+        <p>共 {all.length} 条，点一下复制，进游戏控制台粘贴</p>
       </header>
+
       <section className="card">
-        <div className="cmdlist">
-          {CMDS.map((c) => (
-            <button className="cmd" key={c.cmd} onClick={async () => {
-              try { await navigator.clipboard.writeText(c.cmd); toast(`已复制 ${c.cmd}`); }
-              catch { toast("复制失败", "err"); }
-            }}>
-              <code>{c.cmd}</code>
-              <span>{c.desc}</span>
-              <i>{I.copy(13)}</i>
-            </button>
+        <div className="seg seg--wrap">
+          {tabs.map((t) => (
+            <button key={t.key} type="button"
+              className={tab === t.key ? "is-on" : ""}
+              onClick={() => setTab(t.key)}>{t.label}</button>
           ))}
         </div>
+        <input className="input" style={{ marginTop: 10 }} value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="搜命令或说明，比如 status / 联机 / 难度" />
       </section>
-      <p className="note">控制台默认按 <code>~</code> 打开；需在启动项加 <code>-console</code>，管理器启动插件模式时已带上。</p>
+
+      <section className="card">
+        {list.length === 0 ? (
+          <p className="note" style={{ margin: 0 }}>没找到匹配的命令，换个关键词试试。</p>
+        ) : (
+          <div className="cmdlist">
+            {list.map((c) => (
+              <button className="cmd" key={c.cmd} onClick={() => copy(c.cmd)}>
+                <code>{c.cmd}</code>
+                <span>{c.desc}</span>
+                <i>{I.copy(13)}</i>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <p className="note">
+        控制台默认按 <code>~</code> 打开。没反应的话，Steam 库右键 CS2 → 属性 → 启动选项加 <code>-console</code>；
+        管理器用「插件模式」启动时已经自动带上了。
+      </p>
+      <p className="note">
+        标着「要 sv_cheats 1」的命令，先发 <code>sv_cheats 1</code> 再发它，否则无效。
+        联机时房主才需要开 cheats，加入的人不用。
+      </p>
     </div>
   );
 }
