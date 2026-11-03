@@ -2696,12 +2696,17 @@ async fn download_update(
         "downloaded": got, "total": got, "percent": 100u32, "phase": "installing"
     }));
 
-    // 延迟 2 秒再拉起安装器：先让本程序完全退出，否则安装器会被文件占用卡住
+    // 直接拉起安装程序：它是 GUI 程序，本身没有控制台窗口，
+    // 不需要经过 cmd（之前用 cmd + start 拼引号，路径一复杂就报「找不到 \\ 文件」）。
+    // 不加 /S，让它弹出正常的安装向导，用户点下一步即可完成升级。
     let path = file.to_string_lossy().to_string();
-    let cmdline = format!("ping -n 3 127.0.0.1 >nul & start \"\" \"{}\" /S", path);
-    let _ = cmd("cmd").args(["/C", &cmdline]).spawn();
+    let spawned = std::process::Command::new(&path).spawn();
+    if let Err(e) = spawned {
+        return Err(format!("安装包已下载，但启动安装程序失败：{}\n文件位置：{}", e, path));
+    }
 
-    std::thread::sleep(std::time::Duration::from_millis(400));
+    // 给安装程序一点启动时间，然后退出，避免它覆盖本程序文件时被占用
+    std::thread::sleep(std::time::Duration::from_millis(800));
     app.exit(0);
     Ok(serde_json::json!({ "success": true, "path": path }))
 }

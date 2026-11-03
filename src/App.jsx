@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.5.0";
+const VER = "v2.6.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,20 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.5.0",
+    v: "v2.6.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "修复：点「立即更新」弹「Windows 找不到文件」，装不上",
+      "自动更新不再经过命令提示窗口，直接拉起安装向导",
+      "教程重写为 10 步，补上难度切换、换肤登录、击杀图标的具体操作",
+      "难度页说明：先点选档位再应用，切换后必须重开游戏",
+    ],
+  },
+  {
+    v: "v2.5.0",
+    date: "2026-11-03",
+    tag: "修复",
     items: [
       "卸载改为彻底删除，游戏目录里不再堆积备份（此前已堆积 854MB）",
       "卸载自动还原被覆盖的官方原文件，Steam 不再提示「需要更新下载内容」",
@@ -354,11 +365,7 @@ function Sidebar({ view, onGo, state, manifest, guideSeen, hasUpdate }) {
   return (
     <aside className="side">
       <div className="side__brand">
-        <span className="side__logo">雪</span>
-        <span className="side__meta">
-          <b className="side__title">这里是菜单喵</b>
-          <em>{VER}</em>
-        </span>
+        <b className="side__title side__title--lg">这里是菜单喵</b>
       </div>
 
       <nav className="side__nav">
@@ -946,9 +953,9 @@ const GUIDE = [
   },
   {
     t: "确认游戏路径",
-    d: "管理器得知道游戏装在哪。选到游戏根目录这一层，不是 game\\csgo。",
+    d: "管理器得知道游戏装在哪。选到游戏根目录这一层，不是 game/csgo。",
     pts: [
-      "路径长这样：D:////apps////steam////steamapps////common////Counter-Strike Global Offensive",
+      "路径长这样：D:/apps/steam/steamapps/common/Counter-Strike Global Offensive",
       "设置页有「自动检测」和「浏览…」两个按钮",
     ],
     action: { label: "去设置页", kind: "go", target: "settings" },
@@ -958,14 +965,24 @@ const GUIDE = [
     d: "把整套插件解压进游戏，同时自动备份会被覆盖的原文件。第一次装、或者游戏更新后失效，都点这个。",
     pts: [
       "装完状态灯会从红变绿",
-      "想确认装全了，去「插件」页看是不是 55/55",
-      "只想换肤？总览页「运行模式」切到「只开换肤」",
+      "去「插件」页确认：插件 36/36、官方文件 15/15",
+      "解压大约 30–60 秒，别以为卡死了",
     ],
     action: { label: "去总览页安装", kind: "go", target: "home" },
   },
   {
+    t: "想只换肤？切到「只开换肤」",
+    d: "总览页顶部有个「运行模式」，可以在「完整人机」和「只开换肤」之间切。",
+    pts: [
+      "只开换肤 = 只加载库存换肤插件，人机 AI、饰品随机、徽章全部停用",
+      "难度和规则不受影响，切过去照样能调",
+      "想恢复人机增强，切回「完整人机」即可，插件不会丢",
+    ],
+    action: { label: "去总览页切换", kind: "go", target: "home" },
+  },
+  {
     t: "用插件模式启动",
-    d: "只有「插件模式」进游戏，人机增强才生效。官方原版会把挂载摘掉，插件不加载。",
+    d: "只有「插件模式」进游戏，插件才生效。官方原版会把挂载摘掉，插件不加载。",
     pts: [
       "插件模式 = cs2.exe -steam -insecure -console",
       "打官匹就用官方原版，别混用",
@@ -973,50 +990,52 @@ const GUIDE = [
     action: { label: "去总览页启动", kind: "go", target: "home" },
   },
   {
-    t: "进游戏加载预设",
-    d: "bot_randomizer 这类命令必须等插件加载完才能执行，所以要在游戏控制台里 exec 一次预设。",
+    t: "调整难度",
+    d: "难度不是一个数字，是三份不同的 botprofile.vpk。切换时会把对应档位复制成 overrides/botprofile.vpk，同时改 bot_difficulty。",
     pts: [
-      "控制台按 ~ 打开",
-      "输入 exec my_bot_normal_config 回车",
-      "规则、饰品随机、瞄准、投掷物，全在这一份里",
-    ],
-    action: { label: "复制 exec 命令", kind: "copy", text: "exec my_bot_normal_config" },
-  },
-  {
-    t: "调难度",
-    d: "难度不是一个数字，是三份不同的 botprofile.vpk。切换时会把对应档位复制成 overrides/botprofile.vpk。",
-    pts: [
-      "当前生效的是哪一档，界面会逐字节比对出来",
-      "下一局生效，改的时候 CS2 要关着",
+      "先在「低 / 中 / 高」三个档位里点选一个，再点应用，不要直接拖",
+      "切换后必须重开游戏才生效，当前这局不会变",
+      "改的时候 CS2 要完全关着，否则会提示先退游戏",
     ],
     action: { label: "去人机页", kind: "go", target: "bots" },
   },
   {
-    t: "改对局规则",
+    t: "修改对局规则",
     d: "加时、友伤、叠人、连跳、C4 倒计时、燃烧瓶倍率，六项都是真写进 cfg 的。",
     pts: [
       "同时写管理器 cfg 和三套预设，不会被冲掉",
       "「允许叠人」是反的：开 = mp_solid_enemies 0",
+      "改完下一局生效，不用重开游戏",
     ],
     action: { label: "去规则页", kind: "go", target: "rules" },
   },
   {
     t: "外观：保持默认",
-    d: "XP 过载徽章、动态 MVP 名片、22 套击杀图标。参数已经调好了，没有明确需求就别动。",
+    d: "XP 过载徽章、动态 MVP 名片的参数已经调好了，没有明确需求就别动，改错了徽章会不显示。",
     pts: [
-      "击杀图标在软件里选的是默认值",
-      "游戏内还要发 !weaponkill 再发 !编号 才立刻生效",
-      "徽章颜色由 RankType 决定，插件只有全局一个值",
+      "击杀图标在软件里选的只是默认值",
+      "游戏内聊天框先发 !weaponkill，再发 !编号（1–18）才会立刻生效",
+      "右上角状态灯要显示「已挂载」，否则图标全不显示",
     ],
     action: { label: "去外观页", kind: "go", target: "look" },
   },
   {
+    t: "换肤：走链接，先登录账号",
+    d: "皮肤不在管理器里改。点「打开皮肤库存」直达库存网站，在那里配装。",
+    pts: [
+      "必须先登录你玩 CS2 用的那个账号，否则改了不生效",
+      "登录后再改皮肤，进游戏才会显示",
+      "换肤插件要开着（只开换肤模式下默认就是开的）",
+    ],
+    action: { label: "打开皮肤库存", kind: "url", url: "https://inventory.cstrike.app" },
+  },
+  {
     t: "出问题了怎么办",
-    d: "记住两个按钮就够了：重新下发配置、一键卸载还原。",
+    d: "记住三个按钮就够了：重新下发配置、彻底删除插件、安装 / 修复套件。",
     pts: [
       "插件突然全失效 → 重新下发配置",
-      "不想玩了 → 一键卸载还原（只是移动到备份目录，不删除）",
-      "卸载后想装回来 → 安装 / 修复套件",
+      "不想玩了 → 彻底删除插件（直接删，不保留备份）",
+      "删了想装回来 → 安装 / 修复套件",
     ],
     action: { label: "查看更新公告", kind: "notice" },
   },
@@ -1038,6 +1057,7 @@ function Guide({ go, meta, refresh, toast, openNotice }) {
     const a = cur.action;
     if (a.kind === "go") { go(a.target); return; }
     if (a.kind === "notice") { openNotice(); return; }
+    if (a.kind === "url") { api.openUrl(a.url); return; }
     if (a.kind === "refresh") {
       await refresh();
       const m = meta.manifest;
@@ -1055,7 +1075,7 @@ function Guide({ go, meta, refresh, toast, openNotice }) {
     <div className="page">
       <header className="page__head">
         <h1>教程</h1>
-        <p>九步走完，这套东西就全通了</p>
+        <p>十步走完，这套东西就全通了</p>
       </header>
 
       <section className="card guide">

@@ -137,8 +137,7 @@ body {
 .side__brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 8px 8px 12px;
+  padding: 16px 8px 18px;
 }
 .side__logo {
   width: 32px; height: 32px;
@@ -935,6 +934,11 @@ body {
 }
 
 /* ═══════════ 侧边栏标题（彩色） ═══════════ */
+.side__title--lg {
+  font-size: 16px !important;
+  letter-spacing: .8px !important;
+  line-height: 1.2;
+}
 .side__title {
   font-size: 13px !important;
   font-weight: 800 !important;
