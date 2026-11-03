@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.8.0";
+const VER = "v2.9.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -35,17 +35,81 @@ function ToastProvider({ children }) {
 }
 const useToast = () => useContext(ToastCtx);
 
-/* ═══════════ 音乐（挂在 App 层，切页不断） ═══════════ */
+/* ═══════════ 音乐播放器（挂在 App 层，切页不断） ═══════════ */
+const MUSIC_DB = "xr-music";
+const MUSIC_STORE = "tracks";
+
+function musicDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(MUSIC_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(MUSIC_STORE)) {
+        db.createObjectStore(MUSIC_STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function musicAll() {
+  try {
+    const db = await musicDB();
+    return await new Promise((resolve) => {
+      const rq = db.transaction(MUSIC_STORE, "readonly").objectStore(MUSIC_STORE).getAll();
+      rq.onsuccess = () => resolve(rq.result || []);
+      rq.onerror = () => resolve([]);
+    });
+  } catch { return []; }
+}
+
+async function musicPut(rec) {
+  try {
+    const db = await musicDB();
+    await new Promise((resolve) => {
+      const tx = db.transaction(MUSIC_STORE, "readwrite");
+      tx.objectStore(MUSIC_STORE).put(rec);
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+  } catch {}
+}
+
+async function musicDel(id) {
+  try {
+    const db = await musicDB();
+    await new Promise((resolve) => {
+      const tx = db.transaction(MUSIC_STORE, "readwrite");
+      tx.objectStore(MUSIC_STORE).delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+  } catch {}
+}
+
 const MusicCtx = createContext(null);
+const BUILTIN_TRACK = { id: "builtin", name: "小小奇迹", url: bgmSrc, builtin: true };
+
 function MusicProvider({ children }) {
   const audioRef = useRef(null);
   const fadeRef = useRef(null);
+  const [tracks, setTracks] = useState([BUILTIN_TRACK]);
+  const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [visible, setVisibleState] = useState(() => {
+    try { return localStorage.getItem("xr.player") !== "0"; } catch { return true; }
+  });
   const [volume, setVolume] = useState(() => {
     const v = parseFloat(localStorage.getItem("xr.vol") || "");
     return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0.45;
   });
   const volRef = useRef(volume);
+
+  const setVisible = useCallback((v) => {
+    setVisibleState(v);
+    try { localStorage.setItem("xr.player", v ? "1" : "0"); } catch {}
+  }, []);
 
   const fadeTo = useCallback((to, ms = 1600) => {
     const a = audioRef.current; if (!a) return;
@@ -59,16 +123,43 @@ function MusicProvider({ children }) {
     }, 60);
   }, []);
 
-  const play = useCallback(async () => {
-    const a = audioRef.current; if (!a) return;
+  // 启动时读回导入过的本地音乐
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const saved = await musicAll();
+      if (!alive || !saved.length) return;
+      setTracks((prev) => prev.concat(
+        saved.map((r) => ({ id: r.id, name: r.name, url: URL.createObjectURL(r.blob) }))
+      ));
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const playAt = useCallback(async (i) => {
+    const a = audioRef.current;
+    const t = tracks[i];
+    if (!a || !t) return;
+    if (a.getAttribute("src") !== t.url) a.src = t.url;
+    setIdx(i);
     try { a.volume = 0; await a.play(); setPlaying(true); fadeTo(volRef.current); } catch {}
-  }, [fadeTo]);
+  }, [tracks, fadeTo]);
 
   const toggle = useCallback(async () => {
     const a = audioRef.current; if (!a) return;
     if (playing) { clearInterval(fadeRef.current); a.pause(); setPlaying(false); }
-    else await play();
-  }, [playing, play]);
+    else await playAt(idx);
+  }, [playing, idx, playAt]);
+
+  const next = useCallback(() => {
+    if (tracks.length < 2) return;
+    playAt((idx + 1) % tracks.length);
+  }, [idx, tracks.length, playAt]);
+
+  const prev = useCallback(() => {
+    if (tracks.length < 2) return;
+    playAt((idx - 1 + tracks.length) % tracks.length);
+  }, [idx, tracks.length, playAt]);
 
   const changeVolume = (v) => {
     const val = Math.min(1, Math.max(0, v));
@@ -78,6 +169,32 @@ function MusicProvider({ children }) {
     if (a && playing) { clearInterval(fadeRef.current); a.volume = val; }
   };
 
+  const importFiles = useCallback(async (fileList) => {
+    const added = [];
+    for (const f of Array.from(fileList || [])) {
+      if (!f.type.startsWith("audio/")) continue;
+      const id = "u" + Date.now() + Math.random().toString(36).slice(2, 7);
+      const name = f.name.replace(/\.[^.]+$/, "");
+      await musicPut({ id, name, blob: f });
+      added.push({ id, name, url: URL.createObjectURL(f) });
+    }
+    if (added.length) setTracks((prev) => prev.concat(added));
+    return added.length;
+  }, []);
+
+  const removeTrack = useCallback(async (id) => {
+    if (id === "builtin") return;
+    setTracks((prev) => {
+      const i = prev.findIndex((t) => t.id === id);
+      if (i < 0) return prev;
+      const nt = prev.filter((t) => t.id !== id);
+      setIdx((cur) => (cur >= nt.length ? Math.max(0, nt.length - 1) : cur > i ? cur - 1 : cur));
+      return nt;
+    });
+    await musicDel(id);
+  }, []);
+
+  // 首次进入自动播放（被拦就等第一次点击）
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
     let started = false;
@@ -96,13 +213,92 @@ function MusicProvider({ children }) {
   }, [fadeTo]);
 
   return (
-    <MusicCtx.Provider value={{ playing, toggle, volume, changeVolume }}>
+    <MusicCtx.Provider value={{
+      tracks, idx, playing, visible, volume,
+      toggle, next, prev, playAt, changeVolume, importFiles, removeTrack, setVisible,
+    }}>
       {children}
-      <audio ref={audioRef} src={bgmSrc} loop preload="auto" />
+      <audio ref={audioRef} src={bgmSrc} loop={tracks.length === 1} preload="auto"
+        onEnded={() => { if (tracks.length > 1) next(); }} />
     </MusicCtx.Provider>
   );
 }
 const useMusic = () => useContext(MusicCtx);
+
+/* ═══════════ 播放器界面 ═══════════ */
+function MusicPlayer() {
+  const {
+    tracks, idx, playing, visible, volume,
+    toggle, next, prev, playAt, changeVolume, importFiles, removeTrack, setVisible,
+  } = useMusic();
+  const { toast } = useToast();
+  const [showList, setShowList] = useState(false);
+  const fileRef = useRef(null);
+  const cur = tracks[idx] || tracks[0];
+
+  // 关掉后留一个小入口，随时能再打开
+  if (!visible) {
+    return (
+      <button className="player-open" onClick={() => setVisible(true)} title="打开音乐播放器">
+        {I.note(15)}
+      </button>
+    );
+  }
+
+  return (
+    <div className="player">
+      <div className="player__head">
+        <span className="player__art">{I.note(16)}</span>
+        <span className="player__meta">
+          <b title={cur?.name}>{cur?.name || "未选择"}</b>
+          <em>{tracks.length > 1 ? `${idx + 1} / ${tracks.length}` : "内置音乐"}</em>
+        </span>
+        <button className="player__x" onClick={() => setVisible(false)} title="关闭播放器">
+          {I.close(12)}
+        </button>
+      </div>
+
+      <div className="player__ctrl">
+        <button className="player__btn" onClick={prev} disabled={tracks.length < 2} title="上一首">{I.prev(14)}</button>
+        <button className="player__play" onClick={toggle} title={playing ? "暂停" : "播放"}>
+          {playing ? I.pause(16) : I.play(16)}
+        </button>
+        <button className="player__btn" onClick={next} disabled={tracks.length < 2} title="下一首">{I.next(14)}</button>
+        <input className="range player__vol" type="range" min="0" max="1" step="0.01"
+          value={volume} onChange={(e) => changeVolume(Number(e.target.value))} title="音量" />
+      </div>
+
+      <div className="player__foot">
+        <button className="player__add" onClick={() => fileRef.current?.click()}>+ 导入音乐</button>
+        <button className="player__list" onClick={() => setShowList((v) => !v)}>
+          {showList ? "收起" : `列表 ${tracks.length}`}
+        </button>
+      </div>
+
+      {showList && (
+        <div className="player__tracks">
+          {tracks.map((t, i) => (
+            <div className={`player__track ${i === idx ? "is-on" : ""}`} key={t.id}>
+              <button className="player__tname" onClick={() => playAt(i)}>{t.name}</button>
+              {!t.builtin && (
+                <button className="player__del" onClick={() => removeTrack(t.id)} title="移除">×</button>
+              )}
+            </div>
+          ))}
+          <p className="player__hint">导入的音乐会保存在本机，重启后还在</p>
+        </div>
+      )}
+
+      <input ref={fileRef} type="file" accept="audio/*" multiple hidden
+        onChange={async (e) => {
+          const n = await importFiles(e.target.files);
+          e.target.value = "";
+          if (n) toast(`已导入 ${n} 首`);
+          else toast("没有可导入的音频文件", "err");
+        }} />
+    </div>
+  );
+}
 
 /* ═══════════ 图标 ═══════════ */
 const S = (p, s) => ({ width: s, height: s, viewBox: "0 0 24 24", ...p });
@@ -123,6 +319,9 @@ const I = {
   palette: (s = 17) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-1.6-1.6-2.2-1.6-3.4 0-1 .8-1.8 2-1.8H17a4 4 0 0 0 4-4c0-3.9-4-7-9-7z"/><circle cx="8" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/><circle cx="16" cy="9" r="1.1" fill="currentColor" stroke="none"/></svg>,
   terminal: (s = 17) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7.5 10 2.5 2.5L7.5 15"/><path d="M12.5 15h4"/></svg>,
   copy: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6a2.5 2.5 0 0 0-2.5 2.5V13"/></svg>,
+  note: (s = 16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>,
+  prev: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6z"/><path d="M20 5v14l-10-7z"/></svg>,
+  next: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2z"/><path d="M4 5v14l10-7z"/></svg>,
   book: (s = 17) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5A1.5 1.5 0 0 0 20 18.5z"/></svg>,
   arrow: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>,
   refresh: (s = 15) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>,
@@ -184,9 +383,20 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.8.0",
+    v: "v2.9.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "音乐播放器重做：可导入本地音乐、切歌、查看列表",
+      "导入的歌曲保存在本机，重启后还在，可随时移除",
+      "播放器挪到内容区左下角，带独立关闭按钮，关掉后留小音符入口",
+      "修复：下载失败提示里的按钮几乎看不见",
+    ],
+  },
+  {
+    v: "v2.8.0",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "命令库从 15 条扩到 68 条",
       "按联机 / 人机 / 规则 / 显示 / 插件五类分组",
@@ -381,7 +591,6 @@ const NAV = [
 ];
 
 function Sidebar({ view, onGo, state, manifest, guideSeen, hasUpdate }) {
-  const { playing, toggle, volume, changeVolume } = useMusic();
   const okCount = manifest ? manifest.present : 0;
   const total = manifest ? manifest.total : 0;
   return (
@@ -406,11 +615,6 @@ function Sidebar({ view, onGo, state, manifest, guideSeen, hasUpdate }) {
         <div className="side__stat">
           <span className={`dot ${manifest?.ok ? "dot--ok" : manifest ? "dot--warn" : "dot--idle"}`} />
           <span>{manifest ? `${okCount}/${total} 项就位` : "检测中…"}</span>
-        </div>
-        <div className="side__music">
-          <button className="side__mbtn" onClick={toggle}>{playing ? I.pause(12) : I.play(12)}</button>
-          <input className="range range--mini" type="range" min="0" max="1" step="0.01" value={volume}
-            onChange={(e) => changeVolume(Number(e.target.value))} />
         </div>
       </div>
     </aside>
@@ -1312,6 +1516,7 @@ function Commands({ toast }) {
 
 /* ═══════════ 页：设置 ═══════════ */
 function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, openNotice, updateInfo, setUpdateInfo }) {
+  const { visible: playerVisible, setVisible: setPlayerVisible } = useMusic();
   const [prog, setProg] = useState(null);
   const [dlError, setDlError] = useState(null);
 
@@ -1391,13 +1596,18 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
       </section>
 
       <section className="card">
-        <div className="card__head"><span className="card__title">背景音乐</span></div>
-        <div className="slider-row">
-          <button className="iconbtn" onClick={toggle}>{playing ? I.pause(13) : I.play(13)}</button>
-          <input className="range" type="range" min="0" max="1" step="0.01" value={volume}
-            onChange={(e) => changeVolume(Number(e.target.value))} />
-          <b>{Math.round(volume * 100)}</b>
+        <div className="card__head">
+          <span className="card__title">背景音乐</span>
+          <span className={`pill ${playerVisible ? "pill--ok" : ""}`}>{playerVisible ? "播放器已显示" : "已隐藏"}</span>
         </div>
+        <div className="row">
+          <div className="row__txt">
+            <b>显示播放器</b>
+            <span>左下角那个卡片。可以导入本地音乐、切歌、调音量</span>
+          </div>
+          <Toggle on={playerVisible} onChange={(v) => setPlayerVisible(v)} />
+        </div>
+        <p className="note">关掉后左下角会留一个小音符按钮，点一下就能重新打开。</p>
       </section>
 
       <section className="card">
@@ -1452,16 +1662,16 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
         )}
 
         {dlError && (
-          <div className="alert alert--bad" style={{ marginTop: 10 }}>
-            <b>自动下载失败</b>
-            <div style={{ fontSize: 11, lineHeight: 1.55 }}>
+          <div className="dlfail">
+            <div className="dlfail__title">自动下载失败</div>
+            <div className="dlfail__text">
               自动下载会依次尝试 GitHub 官方和几个国内加速镜像，这次全部没通。
               点下面按钮用浏览器下载，装完一样是升级到最新版。
             </div>
-            <code style={{ display: "block", marginTop: 6, wordBreak: "break-all" }}>{dlError}</code>
-            <div className="grid2" style={{ marginTop: 8 }}>
-              <button className="btn btn--soft btn--sm" onClick={() => { api.openUrl(dlError); }}>用浏览器下载</button>
-              <button className="btn btn--ghost btn--sm" onClick={async () => {
+            <code className="dlfail__url">{dlError}</code>
+            <div className="dlfail__actions">
+              <button className="btn btn--primary" onClick={() => { api.openUrl(dlError); }}>用浏览器下载</button>
+              <button className="btn btn--light" onClick={async () => {
                 try { await navigator.clipboard.writeText(dlError); toast("链接已复制"); }
                 catch { toast("复制失败", "err"); }
               }}>复制链接</button>
@@ -1665,6 +1875,7 @@ function App() {
         </div>
       </div>
       <Pet />
+      <MusicPlayer />
       {notice && <Announcement onClose={closeNotice} />}
     </>
   );
