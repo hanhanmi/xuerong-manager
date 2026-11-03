@@ -2336,6 +2336,9 @@ fn set_mode(app: TauriState<'_, AppState>, mode: String) -> Value {
 
 const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+/// 内置更新仓库：用户没填更新源时直接用它，不用手贴链接
+const DEFAULT_UPDATE_REPO: &str = "github:hanhanmi/xuerong-manager";
+
 /// 把 "v2.2.0" / "2.2.1-beta" 之类规整成 (2,2,0)
 fn parse_version(v: &str) -> (u64, u64, u64) {
     let core = v.trim().trim_start_matches(['v', 'V']);
@@ -2364,7 +2367,17 @@ fn get_app_version() -> Value {
 #[tauri::command(async)]
 fn get_update_source(app: TauriState<'_, AppState>) -> Value {
     let s = app.inner.lock().unwrap().clone();
-    serde_json::json!({ "source": s.update_source, "version": APP_VERSION })
+    let effective = if s.update_source.trim().is_empty() {
+        DEFAULT_UPDATE_REPO.to_string()
+    } else {
+        s.update_source.clone()
+    };
+    serde_json::json!({
+        "source": effective,
+        "custom": s.update_source,
+        "default": DEFAULT_UPDATE_REPO,
+        "version": APP_VERSION,
+    })
 }
 
 #[tauri::command(async)]
@@ -2383,17 +2396,15 @@ async fn check_app_update(app: TauriState<'_, AppState>, source: Option<String>)
         Some(x) => x,
         None => {
             let s = app.inner.lock().unwrap().clone();
-            s.update_source.clone()
+            if s.update_source.trim().is_empty() {
+                DEFAULT_UPDATE_REPO.to_string()
+            } else {
+                s.update_source.clone()
+            }
         }
     };
 
-    if src.is_empty() {
-        return Ok(serde_json::json!({
-            "hasUpdate": false, "current": APP_VERSION,
-            "latest": Value::Null, "url": Value::Null, "notes": Value::Null,
-            "error": "未设置更新源",
-        }));
-    }
+    let src = if src.is_empty() { DEFAULT_UPDATE_REPO.to_string() } else { src };
 
     let client = http_client();
 

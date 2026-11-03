@@ -18,7 +18,7 @@ https://github.com/new
 
 ## 2. 关联远程并推送
 
-把下面命令里的 `你的用户名` 换成你的 GitHub 用户名，然后在这个目录下执行：
+远程地址和分支已经配好了，直接执行这一条：
 
 ```bash
 cd "C:\Users\ASUS\Downloads\雪绒bot管理器\雪绒人机管理器"
@@ -38,20 +38,16 @@ git push -u origin main
 
 | 字段 | 填什么 |
 |---|---|
-| Choose a tag | `v2.4.0`（点 "Create new tag"） |
-| Release title | `v2.4.0` |
+| Choose a tag | `v2.4.1`（点 "Create new tag"） |
+| Release title | `v2.4.1` |
 | Describe this release | 直接复制 `更新公告` 里的内容 |
-| Attach binaries | 拖入 `雪绒人机管理器_2.4.0_x64-setup.exe` |
+| Attach binaries | 拖入 `雪绒人机管理器_2.4.1_x64-setup.exe` |
 
 点 **Publish release**。
 
-然后在管理器：设置页 →「软件更新」→ 展开「高级：更新源」→ 填
+**不用再填更新源了** —— v2.4.1 已经把 `github:hanhanmi/xuerong-manager` 写进程序。
 
-```
-github:你的用户名/xuerong-manager
-```
-
-填一次就够。以后每次发版只要重复第 3 步（改 tag 号），所有装了软件的人打开就会看到红点。
+以后每次发版只要重复第 3 步（改 tag 号 + 换安装包），所有装了软件的人打开就会看到红点提示。
 
 ---
 

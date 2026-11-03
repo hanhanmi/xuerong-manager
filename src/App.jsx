@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.4.0";
+const VER = "v2.4.1";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,18 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.4.0",
+    v: "v2.4.1",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "内置更新仓库，装完直接能检查更新，不用手填任何链接",
+      "更新源输入框改为可选覆盖，留空即用内置地址",
+    ],
+  },
+  {
+    v: "v2.4.0",
+    date: "2026-11-03",
+    tag: "功能",
     items: [
       "新增一键自动更新：点「立即更新」自动下载并静默安装",
       "下载过程显示进度条与已下载体积，装完自动重启",
@@ -1235,7 +1244,7 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
           <summary>高级：更新源</summary>
           <label className="field">
             <input className="input" defaultValue={meta.updateSource?.source || ""}
-              placeholder="github:你的用户名/仓库名"
+              placeholder="github:hanhanmi/xuerong-manager（默认）"
               onBlur={async (e) => {
                 const v = e.target.value.trim();
                 if (v === (meta.updateSource?.source || "")) return;
