@@ -1,6 +1,6 @@
 [package]
 name = "xuerong-bot-manager"
-version = "2.6.0"
+version = "2.7.0"
 description = "雪绒人机管理器 — CS2 人机插件管理工具"
 authors = ["雪绒"]
 edition = "2021"

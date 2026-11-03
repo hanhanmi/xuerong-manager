@@ -8,7 +8,7 @@ import petImg from "./assets/pet.png";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
-const VER = "v2.6.0";
+const VER = "v2.7.0";
 
 /* ═══════════ Toast ═══════════ */
 const ToastCtx = createContext(null);
@@ -184,9 +184,20 @@ function Splash({ onDone }) {
 /* ═══════════ 更新公告 ═══════════ */
 const CHANGELOG = [
   {
-    v: "v2.6.0",
+    v: "v2.7.0",
     date: "2026-11-03",
     tag: "当前版本",
+    items: [
+      "自动更新支持国内加速镜像：官方不通会自动换 4 个源重试",
+      "下载停滞 20 秒自动判定超时并切换下一个源，不再卡死",
+      "全部源都失败时给出直链，可一键用浏览器下载",
+      "进度条显示当前正在用哪个下载源",
+    ],
+  },
+  {
+    v: "v2.6.0",
+    date: "2026-11-03",
+    tag: "修复",
     items: [
       "修复：点「立即更新」弹「Windows 找不到文件」，装不上",
       "自动更新不再经过命令提示窗口，直接拉起安装向导",
@@ -1165,6 +1176,7 @@ function Commands({ toast }) {
 /* ═══════════ 页：设置 ═══════════ */
 function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, openNotice, updateInfo, setUpdateInfo }) {
   const [prog, setProg] = useState(null);
+  const [dlError, setDlError] = useState(null);
 
   // 监听后端下载进度
   useEffect(() => {
@@ -1266,7 +1278,11 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
           <div className="prog">
             <div className="prog__bar"><i style={{ width: `${prog.percent || 0}%` }} /></div>
             <div className="prog__meta">
-              <span>{prog.phase === "installing" ? "下载完成，正在安装…程序会自动关闭" : "正在下载安装包"}</span>
+              <span>
+                {prog.phase === "installing"
+                  ? "下载完成，正在安装…程序会自动关闭"
+                  : `正在下载${prog.source ? `（${prog.source}）` : ""}`}
+              </span>
               <b>
                 {(prog.downloaded / 1048576).toFixed(1)}
                 {prog.total ? ` / ${(prog.total / 1048576).toFixed(1)}` : ""} MB
@@ -1284,12 +1300,35 @@ function Settings({ state, meta, refresh, softRefresh, toast, bg, setBg, go, ope
             <button className="btn btn--primary" disabled={!updateInfo?.hasUpdate || !updateInfo?.url}
               onClick={async () => {
                 setProg({ percent: 0, downloaded: 0, total: 0, phase: "downloading" });
-                const r = await api.downloadUpdate(updateInfo.url, updateInfo.latest || "");
-                if (r && r.error) {
+                setDlError(null);
+                try {
+                  const r = await api.downloadUpdate(updateInfo.url, updateInfo.latest || "");
+                  if (r && r.error) { setProg(null); setDlError(updateInfo.url); }
+                } catch (e) {
                   setProg(null);
-                  toast(r.error, "err");
+                  setDlError(updateInfo.url);
+                  const msg = typeof e === "string" ? e.split("\n")[0] : "下载失败";
+                  toast(msg, "err");
                 }
               }}>立即更新</button>
+          </div>
+        )}
+
+        {dlError && (
+          <div className="alert alert--bad" style={{ marginTop: 10 }}>
+            <b>自动下载失败</b>
+            <div style={{ fontSize: 11, lineHeight: 1.55 }}>
+              自动下载会依次尝试 GitHub 官方和几个国内加速镜像，这次全部没通。
+              点下面按钮用浏览器下载，装完一样是升级到最新版。
+            </div>
+            <code style={{ display: "block", marginTop: 6, wordBreak: "break-all" }}>{dlError}</code>
+            <div className="grid2" style={{ marginTop: 8 }}>
+              <button className="btn btn--soft btn--sm" onClick={() => { api.openUrl(dlError); }}>用浏览器下载</button>
+              <button className="btn btn--ghost btn--sm" onClick={async () => {
+                try { await navigator.clipboard.writeText(dlError); toast("链接已复制"); }
+                catch { toast("复制失败", "err"); }
+              }}>复制链接</button>
+            </div>
           </div>
         )}
 

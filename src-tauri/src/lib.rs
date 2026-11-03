@@ -2625,8 +2625,93 @@ async fn check_app_update(app: TauriState<'_, AppState>, source: Option<String>)
     }))
 }
 
-/// 下载更新包并静默安装。
-/// 通过 `update-progress` 事件把进度推给前端：{downloaded,total,percent}
+/// 国内可用的 GitHub 加速镜像（只做转发，按可用性排序）
+/// 顺序按实测可用性排：前两个当前可用，后两个备用
+const UPDATE_MIRRORS: [&str; 4] = [
+    "https://gh-proxy.com/",
+    "https://ghproxy.net/",
+    "https://ghfast.top/",
+    "https://hub.gitmirror.com/",
+];
+
+/// 把官方下载地址展开成「官方 + 各镜像」的候选列表
+fn candidate_urls(url: &str) -> Vec<(String, String)> {
+    let mut v = vec![(url.to_string(), "GitHub 官方".to_string())];
+    // 只对 github.com 的地址套镜像，自定义 JSON 里的地址不动
+    if url.contains("github.com") || url.contains("githubusercontent.com") {
+        for m in UPDATE_MIRRORS {
+            v.push((format!("{}{}", m, url), m.trim_end_matches('/').to_string()));
+        }
+    }
+    v
+}
+
+/// 下载单个地址到文件，带停滞检测与进度事件
+async fn fetch_to_file(
+    app: &tauri::AppHandle,
+    client: &reqwest::Client,
+    url: &str,
+    file: &Path,
+    label: &str,
+) -> Result<u64, String> {
+    let mut resp = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|e| format!("连接失败: {}", e))?;
+    if !resp.status().is_success() {
+        return Err(format!("返回 HTTP {}", resp.status()));
+    }
+    let total = resp.content_length().unwrap_or(0);
+    let _ = fs::remove_file(file);
+    let mut out = tokio::fs::File::create(file)
+        .await
+        .map_err(|e| format!("创建文件失败: {}", e))?;
+
+    let mut downloaded: u64 = 0;
+    let mut last_emit = std::time::Instant::now();
+    let _ = app.emit("update-progress", serde_json::json!({
+        "downloaded": 0u64, "total": total, "percent": 0u32,
+        "phase": "downloading", "source": label
+    }));
+
+    loop {
+        // 20 秒没有任何数据就判定卡住，换下一个源
+        let next = tokio::time::timeout(std::time::Duration::from_secs(20), resp.chunk()).await;
+        let chunk = match next {
+            Ok(Ok(Some(c))) => c,
+            Ok(Ok(None)) => break,
+            Ok(Err(e)) => return Err(format!("下载中断: {}", e)),
+            Err(_) => return Err("下载停滞超过 20 秒".to_string()),
+        };
+        out.write_all(&chunk).await.map_err(|e| format!("写入失败: {}", e))?;
+        downloaded += chunk.len() as u64;
+        if last_emit.elapsed().as_millis() >= 120 || (total > 0 && downloaded >= total) {
+            last_emit = std::time::Instant::now();
+            let pct = if total > 0 { ((downloaded as f64 / total as f64) * 100.0).min(100.0) as u32 } else { 0 };
+            let _ = app.emit("update-progress", serde_json::json!({
+                "downloaded": downloaded, "total": total, "percent": pct,
+                "phase": "downloading", "source": label
+            }));
+        }
+    }
+    out.flush().await.ok();
+    drop(out);
+
+    let got = fs::metadata(file).map(|m| m.len()).unwrap_or(0);
+    if got < 1024 * 1024 {
+        let _ = fs::remove_file(file);
+        return Err(format!("只下到 {} 字节，可能是错误页", got));
+    }
+    if total > 0 && got != total {
+        let _ = fs::remove_file(file);
+        return Err(format!("不完整：{}/{} 字节", got, total));
+    }
+    Ok(got)
+}
+
+/// 下载更新包并拉起安装程序。
+/// 会依次尝试 GitHub 官方与多个国内镜像，全部失败时把直链返回给前端。
 #[tauri::command]
 async fn download_update(
     app: tauri::AppHandle,
@@ -2639,76 +2724,55 @@ async fn download_update(
 
     let dir = std::env::temp_dir().join("xuerong_update");
     fs::create_dir_all(&dir).map_err(|e| format!("创建临时目录失败: {}", e))?;
-    let safe_ver: String = version.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '.' || *c == '-').collect();
-    let file = dir.join(format!("xuerong_setup_{}.exe", if safe_ver.is_empty() { "latest".into() } else { safe_ver }));
-    let _ = fs::remove_file(&file);
+    let safe_ver: String = version.chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '.' || *c == '-')
+        .collect();
+    let file = dir.join(format!(
+        "xuerong_setup_{}.exe",
+        if safe_ver.is_empty() { "latest".into() } else { safe_ver }
+    ));
 
     let client = http_client();
-    let mut resp = client
-        .get(url.trim())
-        .send()
-        .await
-        .map_err(|e| format!("连接下载地址失败: {}", e))?;
-    if !resp.status().is_success() {
-        return Err(format!("下载地址返回 {}", resp.status()));
-    }
-    let total = resp.content_length().unwrap_or(0);
+    let candidates = candidate_urls(url.trim());
+    let mut errors: Vec<String> = Vec::new();
+    let mut ok_size: u64 = 0;
+    let mut used_source = String::new();
 
-    let mut out = tokio::fs::File::create(&file)
-        .await
-        .map_err(|e| format!("创建文件失败: {}", e))?;
-
-    let mut downloaded: u64 = 0;
-    let mut last = std::time::Instant::now();
-    let _ = app.emit("update-progress", serde_json::json!({
-        "downloaded": 0u64, "total": total, "percent": 0u32, "phase": "downloading"
-    }));
-
-    while let Some(chunk) = resp.chunk().await.map_err(|e| format!("下载中断: {}", e))? {
-        out.write_all(&chunk).await.map_err(|e| format!("写入失败: {}", e))?;
-        downloaded += chunk.len() as u64;
-        if last.elapsed().as_millis() >= 120 || (total > 0 && downloaded >= total) {
-            last = std::time::Instant::now();
-            let pct = if total > 0 { ((downloaded as f64 / total as f64) * 100.0).min(100.0) as u32 } else { 0 };
-            let _ = app.emit("update-progress", serde_json::json!({
-                "downloaded": downloaded, "total": total, "percent": pct, "phase": "downloading"
-            }));
+    for (cand, label) in &candidates {
+        match fetch_to_file(&app, &client, cand, &file, label).await {
+            Ok(size) => { ok_size = size; used_source = label.clone(); break; }
+            Err(e) => { errors.push(format!("{}: {}", label, e)); }
         }
     }
-    out.flush().await.ok();
-    drop(out);
 
-    // 大小校验：防止下到半截或下到 HTML 错误页
-    let got = fs::metadata(&file).map(|m| m.len()).unwrap_or(0);
-    if got < 1024 * 1024 {
-        let _ = fs::remove_file(&file);
-        return Err(format!("下载的文件只有 {} 字节，明显不对（可能是错误页）", got));
-    }
-    if total > 0 && got != total {
-        let _ = fs::remove_file(&file);
-        return Err(format!("下载不完整：{}/{} 字节", got, total));
+    if ok_size == 0 {
+        // 全部源都失败：把直链给前端，让用户用浏览器/下载器自己下
+        return Err(format!(
+            "所有下载源都失败了：{}\n\n可以点「用浏览器下载」手动下载，装完一样是升级。\n直链：{}",
+            errors.join("；"), url.trim()
+        ));
     }
 
     // 去掉 Mark-of-the-Web，减少 SmartScreen 拦截
     let _ = fs::remove_file(format!("{}:Zone.Identifier", file.display()));
 
     let _ = app.emit("update-progress", serde_json::json!({
-        "downloaded": got, "total": got, "percent": 100u32, "phase": "installing"
+        "downloaded": ok_size, "total": ok_size, "percent": 100u32,
+        "phase": "installing", "source": used_source
     }));
 
-    // 直接拉起安装程序：它是 GUI 程序，本身没有控制台窗口，
-    // 不需要经过 cmd（之前用 cmd + start 拼引号，路径一复杂就报「找不到 \\ 文件」）。
-    // 不加 /S，让它弹出正常的安装向导，用户点下一步即可完成升级。
+    // 直接拉起安装程序：GUI 程序本身没有控制台窗口，不经过 cmd
     let path = file.to_string_lossy().to_string();
-    let spawned = std::process::Command::new(&path).spawn();
-    if let Err(e) = spawned {
-        return Err(format!("安装包已下载，但启动安装程序失败：{}\n文件位置：{}", e, path));
+    if let Err(e) = std::process::Command::new(&path).spawn() {
+        return Err(format!(
+            "安装包已下载，但启动安装程序失败：{}\n文件位置：{}",
+            e, path
+        ));
     }
 
-    // 给安装程序一点启动时间，然后退出，避免它覆盖本程序文件时被占用
     std::thread::sleep(std::time::Duration::from_millis(800));
     app.exit(0);
-    Ok(serde_json::json!({ "success": true, "path": path }))
+    Ok(serde_json::json!({ "success": true, "path": path, "source": used_source }))
 }
 
 // ═══════════════════════════════════════════
