@@ -666,6 +666,18 @@ fn snapshot_official_files(temp_dir: &Path, game_dir: &Path) -> usize {
         if !target.is_file() { continue; }
         let saved = pdir.join(rel);
         if saved.is_file() { continue; }
+        // 关键判断：如果游戏里的文件已经和整合包里的完全一样，
+        // 说明它是被上一版管理器覆盖过的，不是官方原文件，不能当快照存。
+        let same_as_pack = match (fs::metadata(entry.path()), fs::metadata(&target)) {
+            (Ok(a), Ok(b)) if a.len() == b.len() => {
+                match (fs::read(entry.path()), fs::read(&target)) {
+                    (Ok(x), Ok(y)) => x == y,
+                    _ => false,
+                }
+            }
+            _ => false,
+        };
+        if same_as_pack { continue; }
         if let Some(parent) = saved.parent() { let _ = fs::create_dir_all(parent); }
         if fs::copy(&target, &saved).is_ok() { n += 1; }
     }
