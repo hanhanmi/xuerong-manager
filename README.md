@@ -40,7 +40,7 @@ The bundled bot stack was upgraded to Smarter-Bot 1.13.29. Highlights from the l
 
 Bots keep three difficulty tiers. Press `css_smartbot_status` in the console to see the live version, site assignments, peek counts and sound/reaction stats.
 
-The upstream notes state the package was file-verified but not play-tested. Treat the in-game feel as something to confirm yourself.
+The upstream notes state the package was file-verified but not play-tested. Treat the in-game feel as something to confirm yourself. A full feature breakdown is in [BOT-AI-FEATURES.md](BOT-AI-FEATURES.md).
 
 ---
 
@@ -80,11 +80,13 @@ Two things are intentionally not in this repository:
 
 ---
 
-## Third-party components
+## Authorship and licensing
 
-The installer bundles Metamod:Source, CounterStrikeSharp, 0Harmony and the CS2-Bot-Improver plugin ecosystem (AGPL-3.0), plus BotController, BotHider and BotVision. Some maintained plugins in this repo are our own forks. See [THIRD-PARTY.md](THIRD-PARTY.md) for the full list, upstream authors and licence terms.
+The installer bundles software by other authors. Bot plugins come from ed0ard's CS2-Bot-Improver ecosystem (AGPL-3.0), native plugins from XBribo, InventorySimulator from ianlucas (MIT), and the frameworks from alliedmodders and roflmuffin (GPL-3.0). Full list with source links: [THIRD-PARTY.md](THIRD-PARTY.md).
 
-The manager code itself is [MIT licensed](LICENSE). If you redistribute an installer containing AGPL components, you still have to meet the AGPL source-provision requirement.
+Written for this project: the desktop manager, `XueRongChat` (FACEIT-style presentation), and the XP overload badge layer in MapRanks. MapRanks itself is upstream work.
+
+Manager code is [MIT](LICENSE). Bundled AGPL components keep their own licences; see THIRD-PARTY.md before redistributing.
 
 ---
 
