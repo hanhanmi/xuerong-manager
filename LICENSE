@@ -1,0 +1,53 @@
+MIT License
+
+Copyright (c) 2026 噗噗咩咩
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 适用范围说明 / Scope
+
+本许可证**仅覆盖本仓库中由作者编写的源代码**：
+
+- `src/**`（React 前端）
+- `src-tauri/src/**`（Rust 后端）
+- `src/styles/**`
+- 文档文件（`*.md`）
+
+**不覆盖**以下内容，它们各自适用其原始授权：
+
+- `src-tauri/resources/CS2BotImprover.zip` 内的所有第三方插件与框架二进制
+- 安装包中分发的任何 Metamod / CounterStrikeSharp / Harmony / 社区插件文件
+- 上游 CS2-Bot-Improver 生态的任何代码或产物
+
+详见 [THIRD-PARTY.md](THIRD-PARTY.md)。
+
+---
+
+## This license does NOT cover third-party components
+
+This MIT license applies only to the original source code authored for this
+project (the manager application itself). It does NOT apply to:
+
+- Any third-party plugin binaries bundled in `src-tauri/resources/`
+- Metamod:Source (GPL-3.0), CounterStrikeSharp (GPL-3.0), Harmony (MIT)
+- Any component of the CS2-Bot-Improver ecosystem (AGPL-3.0)
+
+See [THIRD-PARTY.md](THIRD-PARTY.md) for the full attribution and license list.

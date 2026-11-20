@@ -1,0 +1,22 @@
+{
+  "Headshot": 0,
+  "ThroughSmoke": 0,
+  "NoScope": 0,
+  "AssistedFlash": 0,
+  "AttackerBlind": 0,
+  "AttackerInAir": 0,
+  "Penetrated": 0,
+  "Dominated": 0,
+  "Revenge": 0,
+  "SquadWipe": 0,
+  "Icons": {},
+  "AvailableSkinPacks": [
+    "txz01", "txz02", "txz03", "txz04", "txz05", "txz06", "txz07", "txz08",
+    "txz09", "txz10", "txz11", "txz12", "txz13", "txz14", "txz15", "txz16",
+    "txz17", "txz18", "floatrank", "jnh01", "vip", "diana"
+  ],
+  "SkinPackAceSupport": {
+    "diana": false
+  },
+  "ConfigVersion": 1
+}

@@ -1,0 +1,170 @@
+﻿0| CS2 が起動中です。書き込む前に終了してください。| CS2 is running. Close it before writing.
+1| · 作成機能は使えませんが、共有パックはインポートできます| · Builder unavailable, but shared packs can be imported
+2| · パックが見つかりません| · Pack missing
+3| · アイコン | · Icons 
+4| · 公式ファイル | · Stock files 
+5| · デフォルトパック | · Default pack 
+6|個| 
+7| 個の bot| bots
+8| 個の公式ファイル| stock files
+9| 件の変更。右上のボタンで書き込む| sections changed, click Write at top right
+10|分前| min ago
+11|日前| days ago
+12|時間前| hr ago
+13|プラグイン / |Plugins / 
+14|検証に合格|verified
+15|秒|s
+16|コンポーネント|Components
+17|項目|items
+18|項目が揃いました|items in place
+19|項目が準備完了|items ready
+20|項目に異常|items failed
+21|個のプラグインファイル| plugin files
+22|項目はプラグインファイル| items are plugin files
+23|項目はゲーム純正ファイル（元から存在）、| items are stock game files (already present), 
+24|件）| items)
+25|件。復元 | items, restored 
+26|曲| tracks
+27|!番号|!number
+28|+ 音楽をインポート|+ Import music
+29|+ 武器を追加…|+ Add weapon…
+30|0 = 百発百中、0.2–0.3 で外れてリコイルが必要|0 = perfect aim; 0.2–0.3 adds spread and recoil
+31|1 秒後に現在の試合を再開|Restart the current match in 1 second
+32|1. ゲーム内でミュージックキットを外す|1. Unequip your music kit in game
+33|1593 個のアイコンファイルと gameinfo のマウント行。D3D エラーや起動直後のクラッシュが出たら、まずこれをオフにして試してください|1593 icon files plus the gameinfo mount line. If you get D3D errors or a startup crash, turn this off first
+34|2. インストール／作成後は CS2 を完全に終了してから起動。|2. Fully quit CS2 after installing or building, then launch again.
+35|55 項目のうち、|Of the 55 checks, 
+36|7656119…（17 桁）|7656119… (17 digits)
+37|A) 参加するだけ → 「音效包をインポート」に主催者から受け取った zip をドロップ。|A) Just joining → drop the host's zip into "Import sound pack".
+38|AI 強化|AI enhancement
+39|B) 自分の曲が欲しい → 「曲 + 開始位置 + 長さ + SteamID」を主催者に渡してコンパイルしてもらう。|B) Want your own song → send the host your track, start time, duration and SteamID.
+40|Bot アイテム|Bot items
+41|BotHider 純正プラグインのスイッチ|BotHider's own plugin toggle
+42|C) 自分でコンパイル → Steam ライブラリを「ツール」で絞り込み、Counter-Strike 2 Workshop Tools（約 2 GB）を入れる。|C) Build it yourself → filter your Steam library by Tools and install Counter-Strike 2 Workshop Tools (~2 GB).
+43|C4 カウントダウン|C4 timer
+44|C4 カウントダウン |C4 timer 
+45|C4 カウントダウン（秒）|C4 timer, seconds
+46|CS2 Workshop Tools：|CS2 Workshop Tools: 
+47|MVP カスタム音楽|Custom MVP music
+48|MVP 音楽|MVP music
+49|MapRanks が担当|Handled by MapRanks
+50|Metamod + CounterStrikeSharp 準備完了|Metamod + CounterStrikeSharp ready
+51|PP-Bizon|PP-Bizon
+52|SteamID 紐付け|SteamID binding
+53|SteamID はローカルの Steam から自動取得します。手入力不要。|Your SteamID is read from the local Steam client automatically.
+54|XP オーバーロードバッジ|XP overload badge
+55|bot が射撃しない|bots don't shoot
+56|bot が移動も反撃もしない|bots neither move nor fight back
+57|bot が自分の動きを真似る|bots mirror your movement
+58|bot のランクと動的 MVP パネルは|Bot ranks and the dynamic MVP panel are handled by 
+59|bot の難易度 0–5、数字が大きいほど強い|Bot difficulty 0–5, higher is stronger
+60|bot_randomizer は CSS コマンドです。ゲーム内の|bot_randomizer is a CSS command; run it in game via 
+61|game/csgo 配下の|under game/csgo, 
+62|github:hanhanmi/xuerong-manager（デフォルト）|github:hanhanmi/xuerong-manager (default)
+63|hostname マイールーム|hostname My Room
+64|kick プレイヤー名|kick player_name
+65|m_nPersonaDataXpTrailLevel · 1〜8 を自動割り当て|m_nPersonaDataXpTrailLevel · auto-assigned levels 1–8
+66|play "sounds/mymvp/packs/パッケージ名/mvpanthem.vsnd"|play "sounds/mymvp/packs/pack_name/mvpanthem.vsnd"
+67|say みなさんこんにちは|say hello everyone
+68|say_team B サイト集合|say_team stack B site
+69|· 書き込み前に .bak_before_weapons を自動作成|· A .bak_before_weapons backup is created automatically
+70|· 第 |· No. 
+71|· デフォルト音量|· Default volume
+72|— 変更なし|— No change
+73|① Steam ライブラリ → ツール → 「Counter-Strike 2 Workshop Tools」（約 2 GB）を入れる。これがないと音声をコンパイルできません。② ゲーム設定でミュージックキットを外す。外さないと公式 MVP 音楽と重なります。|① Steam → Tools → install Counter-Strike 2 Workshop Tools (~2 GB) or audio cannot be compiled. ② Unequip your music kit in game, otherwise it overlaps the official MVP anthem.
+74|、\n          およびすべての|, \n          and all 
+75|。\n          変更後は CS2 を完全に終了して再起動してください。マップ読み込み時の gamemode cfg に難易度を上書きされません。|.\n          Fully restart CS2 afterwards so gamemode cfg doesn't override the difficulty.
+76|。人間のような性格・エイム・買い物を決めるのは VPK 内のテンプレートです。\n          精密にcontrolしたい場合は下の「ボット武器」で直接編集し、差分をプレビューできます。|. Bot personality, aim and buy behavior actually come from VPK templates.\n          Use "Bot weapons" below to edit them directly and preview the diff.
+77|「あなたの」印はそのパックがこの PC のアカウントに紐付いていることを示します。|The "yours" mark means the pack is bound to this PC's account.
+78|「完全なボット」= ボット AI + スキン抽選 + ルール + バッジ、全部オン。「スキンのみ」は InventorySimulator だけを読み込みます。スキン目的や切り分けに便利です。|"Full bots" = bot AI + random skins + rules + badges. "Skins only" loads just InventorySimulator, handy for skins or troubleshooting.
+79|「プラグイン」ページで各プラグインを個別にオン／オフ、または一括切替できます。CS2 起動中は操作できないので、まずゲームを終了してください。|The Plugins page toggles each plugin individually or all at once. Controls are disabled while CS2 is running — quit the game first.
+80|ワンクリック起動 · 状態チェック · クイック修復|One-click launch · status check · quick repair
+81|一括禁止：|Ban all: 
+82|ワンクリック診断|One-click diagnostics
+83|前のステップ|Previous
+84|前の曲|Previous track
+85|次のステップ|Next
+86|次の曲|Next track
+87|ダウンロード失敗|Download failed
+88|ダウンロード完了、インストール中…アプリは自動で閉じます|Download complete, installing… the app will close automatically
+89|下の外観カードもこのページに属します。|The appearance cards below belong to this page too.
+90|手順を読む必要はありません。「ウィザード開始」を押すと該当ページへ移動し、実際のボタンをハイライトして吹き出しで案内します。ボタンが見つからない場合はスキップ、いつでも終了できます。|No need to read steps. Start a tour and the UI jumps to the right page, highlights the real button and shows a tip bubble above it. Skip any step or quit anytime.
+91|ゲームの再起動は不要です。|No need to restart the game.
+92|2 つのモードを混在させないでください。|Don't mix the two modes.
+93|個 · 合計 | · total 
+94|個。ゲーム内チャットで |. Send this in the in-game chat: 
+95|個のボットが共用する| bots share these 
+96|個のファイル| files
+97|個のテンプレート| sections
+98|個のテンプレート（VPK の Template ブロックに書き戻し）| sections (written back to the VPK Template blocks)
+99|個の効果音| sounds
+100|中|Medium
+101|積極的に撃ち合う傾向。高すぎると全員が前線に出る。40–60 が人間っぽい|How eager bots are to push. Too high and everyone rushes; 40–60 feels most human
+102|「コンパイル済み .vsnd_c を配置」から、他人が作ったファイルをそのまま置くこともできます。|You can also drop a ready-made file via "Place compiled .vsnd_c".
+103|真人にも書き込む|Also apply to human players
+104|ボット|Bots
+105|ボットが MVP でも再生|Play when a bot gets MVP
+106|ボット制御|Bot control
+107|ボットのエイム（mixed / body）|Bot aim lock (mixed / body)
+108|ボット武器|Bot weapons
+109|エージェントモデル|Agent models
+110|いつエラーが出ましたか？画面には何と表示され、導入前に何をしましたか？（空欄可、但し書くと調査が速い）|When did it fail, what did the error say, and what did you do before installing? (optional, but helpful)
+111|プラグインのバージョンが怪しいときはここで確認できます。|Check here whenever you suspect a plugin version mismatch.
+112|メイン音声ディレクトリ、バックアップ、2 か所のコンパイル作業領域を削除し、このパックに紐付いた SteamID を設定から全て外します。|Deletes the main audio folder, its backup and both build staging folders, and unbinds every SteamID attached to this pack.
+113|低|Low
+114|作者|Author
+115|あなたの|Yours
+116|アグレッシブ度|Aggression
+117|修正|Fixes
+118|自分の MVP 音楽を作って SteamID に紐付け、ラウンド終了時に流す|Make your own MVP anthem, bind it to your SteamID and play it at round end
+119|新しい効果音パックを作る|Create sound pack
+120|ナイフ投げを許可|Allow knife drop
+121|味方との重なりを許可|Allow player stacking
+122|どこでも購入を許可|Allow buying anywhere
+123|プレイヤー自身の音量調整を許可|Let players adjust volume
+124|後で見る|Not now
+125|まず 2 つの準備|Two things first
+126|先に上のリストからパックを選択|Select a pack above first
+127|SteamID を入力|Enter a SteamID first
+128|パッケージ名を入力してからファイルを選択|Enter a pack name before choosing a file
+129|先に音楽をインポート|Import music first
+130|まずゲームパスを確認|Check the game path first
+131|先にパックを選択|Select a pack first
+132|先に音声ファイルを選択|Choose an audio file first
+133|全体チャット|All chat
+134|すべて|All
+135|すべて |All 
+136|すべてオフ|All off
+137|すべてオン|All on
+138|狙撃銃すべて|All sniper rifles
+139|すべて合格（|All passed (
+140|合計 |Total 
+141|情報共有と追従。70–90 が自然|Information sharing and following teammates. 70–90 feels natural
+142|オフ|Off
+143|オフにするとキルアイコンは全て無効になりますが、ボット強化・バッジ・ルールには影響しません。原因切り分けに使ってください。|Turning this off disables all kill icons, but bot AI, badges and rules are unaffected. Use it to isolate problems.
+144|オフにするとボットだけバッジが付く|Off means only bots get badges
+145|オフにすると MVP 音楽を一切差し替えません|Off disables MVP music replacement entirely
+146|オフだと敵同士が重ならなくなる · mp_solid_enemies|Off stops enemies passing through each other · mp_solid_enemies
+147|オフにすると左下に小さな音符ボタンが残り、押せば再表示できます。|When hidden, a small note button stays in the bottom-left corner to reopen it.
+148|閉じる|Close
+149|プレイヤーを閉じる|Close player
+150|他のページには影響しません。移動や再試行ができます|Other pages are unaffected. You can navigate away or retry
+151|互換性|Compatibility
+152|再送信|Send again
+153|もう一度送ってください。\n        対戦ではホストだけが cheats を有効にすればよく、参加者は不要です。|Send it again.\n        In multiplayer only the host needs cheats enabled, not the joined players.
+154|VPK に書き込む（|Write VPK (
+155|書き込み中…|Writing…
+156|書き込み失敗|Write failed
+157|ゲームに書き込む|Write to game
+158|xuerong_manager.cfg に書き込み|Written to xuerong_manager.cfg
+159|3 種のプリセット cfg とマネージャー cfg に書き込み、次のラウンドから有効|Applied to three preset cfgs and the manager cfg; takes effect next round
+160|bot の移動を凍結（デバッグ用）|Freeze bot movement (debug)
+161|クロスヘアの大きさ|Crosshair size
+162|キルアイコン|Kill icons
+163|キルアイコンリソースの上書き|Kill icon resource override
+164|ナイフ|Knives
+165|共有|Share
+166|すべて共有|Share all
+167|LAN モードに切り替え、同じルーターの仲間が接続しやすくする|Switch to LAN mode so people on the same router can join more easily
+168|切り替えると 3 か所を同時に変更します：|Switching changes three things at once: 
+169|切片 → コンパイル → 配置|Slice → compile → deploy

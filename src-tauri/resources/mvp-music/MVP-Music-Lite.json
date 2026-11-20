@@ -1,0 +1,19 @@
+﻿{
+    "Enabled": true,
+    "Version": 3,
+    "PacksDirectory": "sounds/mymvp/packs",
+    "SoundFileName": "mvpanthem.vsnd",
+    "DefaultPack": "default",
+    "Packs": {},
+    "FallbackSound": "",
+    "UnboundMvp": "silent",
+    "IncludeBots": false,
+    "OnlyForSteamIds": [],
+    "DefaultVolume": 1.0,
+    "AllowPlayersToAdjust": true,
+    "RestoreToolVolume": true,
+    "ToolVolumeRestoreSeconds": 12.0,
+    "MuteVanillaOnMvp": false,
+    "MuteRestoreSeconds": 9.0,
+    "RestoreVolume": 1.0
+}

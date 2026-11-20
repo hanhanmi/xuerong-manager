@@ -1,0 +1,62 @@
+/* 磨砂玻璃材质 — 粉色版
+   保留原 Liquid Glass 的两层降级策略：
+   1. CSS @supports 检测 backdrop-filter
+   2. .no-backdrop 由 JS 特性检测添加 */
+
+.glass {
+  position: relative;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(1.04);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(1.04);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card), var(--glass-inset);
+}
+
+.glass-strong {
+  background: var(--glass-fill-strong);
+}
+
+.glass-pink {
+  background: var(--glass-fill-pink);
+  border-color: rgba(255, 179, 205, 0.4);
+}
+
+/* 玻璃高光：左上明亮光斑 + 顶部宽光带，模拟透镜曲面感 */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+      125% 85% at 12% -12%,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0) 44%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0) 36%);
+}
+
+/* 粉色玻璃层带粉色高光 */
+.glass-pink::before {
+  background: radial-gradient(
+      125% 85% at 12% -12%,
+      rgba(255, 179, 205, 0.5) 0%,
+      rgba(255, 179, 205, 0) 44%
+    ),
+    linear-gradient(180deg, rgba(255, 200, 220, 0.3) 0%, rgba(255, 255, 255, 0) 36%);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .glass, .glass-strong, .glass-pink {
+    background: var(--glass-fallback);
+  }
+}
+
+html.no-backdrop .glass,
+html.no-backdrop .glass-strong,
+html.no-backdrop .glass-pink {
+  background: var(--glass-fallback);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}

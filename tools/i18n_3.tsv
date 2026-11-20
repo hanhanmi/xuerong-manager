@@ -1,0 +1,170 @@
+﻿340|キルアイコンのパック選択メニューを開く|Open the kill-icon pack menu
+341|フォルダを開く|Open containing folder
+342|スキンインベントリを開く|Open skin inventory
+343|音楽プレイヤーを開く|Open music player
+344|効果音フォルダを開く|Open sound folder
+345|一括|Batch
+346|スキルレベル|Skill level
+347|を|the 
+348|この zip を展開し、game/csgo の addons、overrides、cfg、backup、panorama へ丸ごと上書きします。初回導入時や、ゲーム更新でプラグインが効かなくなった時に押してください。|Extract this zip over addons, overrides, cfg, backup and panorama under game/csgo. Use it for a first install or whenever a game update breaks the plugins.
+349|ログ、読み込み設定、クラッシュ記録を 1 つの zip にまとめます。送ってもらえれば調査できます。ファイルを探す必要はなく、\n        PC のユーザー名と SteamID は自動でマスクされます。|Bundles logs, load configs and crash records into one zip — just send it over. No need to hunt for files;\n        your Windows username and SteamID are masked automatically.
+350|投擲物の強さ|Grenade intensity
+351|投擲物を最大に（off / less / normal / more / max）|Max grenades (off / less / normal / more / max)
+352|投擲物：|Grenades: 
+353|ドラッグでシーク|Drag to seek
+354|チャーム|Charms
+355|Metamod をマウント · ボット強化が有効|Mount Metamod · bot enhancements active
+356|原版の 40 ダメージを基準に換算し、inferno_damage と inferno_damage_ct の両方に書き込みます。|Scaled from the stock 40 damage; writes both inferno_damage and inferno_damage_ct.
+357|更新日時の新しい順|Newest updated first
+358|プラグイン状態を変えた後にもう一度生成してください|Generate another one after changing plugin states
+359|マップ変更（試合をやり直し）|Change map, restarts the match
+360|マップ変更（スコアと資金を維持）|Change map, keeps score and money
+361|コンソール早見表|Console cheat sheet
+362|コンソールはデフォルトで|The console opens by default with 
+363|制御層 + 判斷層|Control layer + decision layer
+364|プラグイン|Plugins
+365|プラグイン |Plugins 
+366|プラグインはすべて揃っています|All plugins in place
+367|プラグインコマンド|Plugin commands
+368|プラグインのスイッチはここ|Plugin toggles live here
+369|プラグインモード|Plugin mode
+370|プラグインモードは metamod の検索パスマウントが必要|Plugin mode needs the metamod search path mounted
+371|コマンドや説明を検索。例：status / 联机 / 难度|Search commands or descriptions, e.g. status / multiplayer / difficulty
+372|マウント解除 · 完全原版|Unmounted · pure stock
+373|再生|Play
+374|プレイヤー表示中|Player visible
+375|再生ルール|Playback rules
+376|再生時に公式音楽をミュート|Duck official music during playback
+377|操作前に CS2 を完全に終了してください。完了後も自分の音楽設定は保持されます。|Fully quit CS2 before doing this. Your own music config is preserved afterwards.
+378|操作失敗|Operation failed
+379|閉じる|Collapse
+380|作成を閉じる|Collapse builder
+381|パラメータを閉じる|Collapse parameters
+382|詳細を閉じる|Collapse details
+383|ルーム名を変更。サーバー一覧に表示されます|Change the room name shown in the server browser
+384|コンパイル済み .vsnd_c を配置|Place compiled .vsnd_c
+385|デフォルトパックを配置|Install default pack
+386|敵同士がすり抜けられるか。0 = 通過可 = 重なれる|Whether enemies can pass through each other. 0 = pass = stacking allowed
+387|チュートリアル|Guide
+388|統合パック内蔵|Bundled in the kit
+389|ファイル|Files
+390|ファイル選択を利用できません|File picker unavailable
+391|現在のサーバーから切断|Disconnect from the current server
+392|追加|Added
+393|初心者ガイド|Getting started
+394|無敵（sv_cheats 1 が必要）|God mode (needs sv_cheats 1)
+395|長さ（4〜12）|Duration (4–12)
+396|表示 / デバッグ|Display / debug
+397|パッケージ名を表示 → 1 ラウンド MVP を取る。|Show the pack name → win MVP in one round.
+398|表示名（空欄可）|Display name (optional)
+399|座標と移動速度を表示|Show coordinates and movement speed
+400|プレイヤーを表示|Show player
+401|ネットワーク統計を表示（ロス、遅延）|Show network stats (loss, latency)
+402|一時停止|Pause
+403|より人間に近い|More human
+404|更新|Updates
+405|更新中|Updating
+406|更新のお知らせ|Release notes
+407|更新元を保存しました|Update source saved
+408|最大 48 MB。どのモジュールで落ちたか特定できます。回線が遅ければチェックを外して構いません|Up to 48 MB; helps pinpoint the crashing module. Uncheck it on a slow connection
+409|最大観戦者数|Max spectators
+410|最大ラウンド数|Max rounds
+411|最新バージョン|Latest version
+412|音が出たら → チャット欄|If you hear it → the chat box
+413|新しいバージョンがあります |New version available 
+414|未同期|Not synced
+415|未インストール|Not installed
+416|未インストール（クリーンな状態）|Not installed (clean state)
+417|音楽未インポート|No music imported
+418|見つかりません|Not found
+419|未マウント|Not mounted
+420|CS2 が見つかりません|CS2 not detected
+421|未紐付け|Not bound
+422|未設定|Not set
+423|未認識|Unrecognized
+424|ローカルからインポート|Import locally
+425|この PC の SteamID：|Local SteamID: 
+426|マシンガン|Machine guns
+427|すべての bot をキル|Kill all bots
+428|件。クリックでコピーし、ゲーム内コンソールに貼り付け|entries. Click to copy, then paste into the in-game console
+429|入手元：|Source: 
+430|ビルド|Build
+431|XP バッジとランクアイコンの現在の状態を確認|Check the current XP badge and rank icon state
+432|すべて表示 |View all 
+433|「sv_cheats 1 が必要」とあるコマンドは、まず|For commands marked "needs sv_cheats 1", first send 
+434|コアファイル |Core files 
+435|コアファイル検証|Core file check
+436|コアファイル検証に失敗：|Core file check failed: 
+437|フレームワーク|Framework
+438|更新を確認|Check for updates
+439|検出中…|Detecting…
+440|モード|Mode
+441|ぼかし|Blur
+442|ダウンロード中|Downloading
+443|ボタンを探しています…|Locating the button…
+444|ボタンを探しています… このページに無い場合は下のボタンでスキップ|Locating the button… If it isn't on this page, skip it with the button below
+445|収集中…|Collecting…
+446|検証中…|Validating…
+447|オフラインインストーラを読み込み中…|Reading the offline installer…
+448|通常|Normal
+449|ステップ|steps
+450|ステップ · ガイドを始める →|steps · Start tour →
+451|武器スキン|Weapon skins
+452|ランク / 動的 MVP|Ranks / dynamic MVP
+453|各テンプレートはボット 1 分類の武器優先順位です。武器を消すとその分類のボットはそれを買わなくなり、並び順が購入優先度になります。|Each section is the weapon priority for one class of bots. Remove a weapon and that class stops buying it; the order is the buy priority.
+454|1 ラウンドの長さ（分）|Round length in minutes
+455|各項目に種別を表示：修正 = 不具合解消、追加 = 新機能、更新 = バージョン/内容の調整。上のボタンで絞り込み、過去のバージョンも全て残っています。|Every item is tagged: Fixes = bug fixes, Added = new features, Updates = version/content changes. Filter with the buttons above; all past versions are kept.
+456|起動時とアップデート後は毎回日本語が既定で、中国語に切り替えるか確認します|Every launch and every new version defaults to Japanese and asks whether to switch to Chinese
+457|起動ごとに 1 回確認 · AEMEATH|Asked once per launch · AEMEATH
+458|お知らせポップアップを永久に閉じる（新しいバージョンでは再表示されます）|Permanently hide release notes (a new version shows them again)
+459|チュートリアルポップアップを永久に閉じる（新しいバージョンでは再表示されます）|Permanently hide the tutorial (a new version shows it again)
+460|デザートイーグル|Desert Eagle
+461|一致するコマンドがありません。別のキーワードを試してください。|No matching commands. Try another keyword.
+462|インポートできる音声ファイルがありません|No audio files to import
+463|公式ファイルのスナップショットがありません。Steam でゲームファイルの整合性を確認してください|No stock-file snapshot. Verify game file integrity in Steam first
+464|変更なし|No changes
+465|コンパイラが無い場合の 3 つの選択肢：|Three options if you don't have the compiler: 
+466|効果音パック未紐付けの人|Players without a bound sound pack
+467|参照…|Browse…
+468|リキッドガラス|Liquid glass
+469|フェードアウト秒|Fade-out seconds
+470|混合|Mixed
+471|一覧|Manifest
+472|一覧を更新しました|Manifest refreshed
+473|一覧検証 + 個別スイッチ · ゲーム起動中は変更不可|Manifest check + per-plugin toggles · locked while the game runs
+474|ゲームディレクトリ|Game directory
+475|ゲームパス|Game path
+476|ゲーム内で即時切替|Switch live in game
+477|最大|Max
+478|「スキンインベントリを開く」から inventory.cstrike.app へ行き、CS2 を遊んでいるアカウントでログインして銃・グローブ・エージェントを設定します。ゲームに入って初めて反映されます。|Open "Skin inventory" to visit inventory.cstrike.app, log in with the account you play CS2 on, and set up guns, gloves and agents. They appear once you're in game.
+479|機能を 1 つ選ぶと、ボタンを順に押して覚えられます|Pick a feature and I'll walk you through the buttons one by one
+480|下の + からインポート|Import with the + button below
+481|開いたら音声ファイルを選び、パッケージ名・開始秒・長さ・フェードアウト秒を入力。SteamID は自動入力済みです。マネージャーが音声を切り出し → .vsnd_c をコンパイル → メインとバックアップ両方のディレクトリへ配置します。|Pick an audio file, then enter the pack name, start second, duration and fade-out. Your SteamID is filled in. The manager slices the audio, compiles .vsnd_c and deploys it to both the main and backup folders.
+482|火炎瓶 ×|Molotov ×
+483|火炎瓶ダメージ倍率|Molotov damage multiplier
+484|バージョン|Version
+485|状態|Status
+486|状態の読み取りに失敗|Failed to read status
+487|プレイヤーが音量を変えていない時の既定値|Volume used when a player hasn't set their own
+488|zip を生成|Generate zip
+489|「プラグインモード」で起動|Launch in plugin mode
+490|ブラウザでダウンロード|Download in browser
+491|表示言語 / 言語 / Language|Language / 言語 / 界面语言
+492|別アカウントでログインすると設定が反映されません。よくある原因です。|Logging in with the wrong account is the most common reason changes don't show up.
+493|の|of 
+494|スキンはマネージャーでは変更しません|Skins aren't edited in the manager
+495|スキンとグローブ|Skins & gloves
+496|スキンが急に消えたら、まずここでプラグインが別バージョンに差し替わっていないか確認を。|If skins suddenly vanish, check here first — the plugin may have been replaced by another build.
+497|overrides/botprofile.vpk を直接編集 ·|Edit overrides/botprofile.vpk directly ·
+498|VPK を直接編集|Edit the VPK directly
+499|直接書き換え|Direct edit
+500|ランクアイコン番号を直接指定（1–18）|Set the rank icon number directly (1–18)
+501|サーバーへ直接接続。IP を主催者のものに変更|Connect directly to a server; swap in the host's IP
+502|文字が読みづらければ遮罩を上げ、動画を見たいならぼかしを 0 に。|Raise the veil if text is hard to read; set blur to 0 if you want to see the video.
+503|敵を見つけてから動き出すまで。真人は 0.15–0.30 秒、0 はチート級|From seeing an enemy to reacting. Humans take 0.15–0.30 s; 0 is inhuman
+504|サーバー状態、全プレイヤー、IP とポートを表示|Show server status, all players, IP and port
+505|どのパックを入れたか確認|Check which pack is installed
+506|状態と|Status and 
+507|状態と環境を確認|Check status and environment
+508|エイムモード|Aim mode
+509|エイム誤差|Aim error

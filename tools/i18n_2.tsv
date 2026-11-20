@@ -1,0 +1,170 @@
+﻿170|切片 → コンパイル → 配置、10〜60 秒ほどかかります…|Slice → compile → deploy, this can take 10–60 seconds…
+171|リスト |List 
+172|たった今|Just now
+173|たった今更新|Updated just now
+174|初期資金|Starting money
+175|削除|Delete
+176|削除|Delete
+177|作成完了|Build complete
+178|新しい効果音パックを作る|Create new sound pack
+179|効果音パックを作る|Build a sound pack
+180|更新|Refresh
+181|一覧を更新|Refresh list
+182|機能モジュール|Feature modules
+183|追加|Add
+184|bot を 1 体追加してチームを自動調整|Add a bot and auto-balance teams
+185|延長戦|Overtime
+186|rush プリセットを読み込む|Load the rush preset
+187|読み込み中…|Loading…
+188|標準ボットプリセットを読み込む。ルールとスキン抽選もこれに含まれる|Load the standard bot preset, including rules and random skins
+189|デスマッチプリセットを読み込む|Load the deathmatch preset
+190|パックのビルド日時|Pack build time
+191|パッケージ名は空にできません|Pack name cannot be empty
+192|パッケージ名が一致しません|Pack names don't match
+193|パッケージ名（英数字）|Pack name (letters / digits)
+194|パックサイズ / 項目数|Pack size / entries
+195|ハーフタイムでのサイド入替|Halftime side swap
+196|カードとナビを半透明の屈折素材に。オフなら通常のすりガラスで、低スペックでも軽い|Translucent refractive cards and nav. Off gives plain frosted glass and runs better on low-end PCs
+197|アンインストール|Uninstall
+198|履歴|History
+199|味方ダメージ|Friendly fire
+200|味方ダメージ、0 オフ 1 オン|Friendly fire, 0 off / 1 on
+201|デュアルベレッタ|Dual Berettas
+202|反応時間|Reaction time
+203|認識してから引き金を引くまで。真人は 0.05–0.15 秒|From spotting to firing. Humans take 0.05–0.15 s
+204|新しいバージョンが見つかりました |New version found 
+205|キャンセル|Cancel
+206|ルームパスワードを解除|Remove room password
+207|マネージャーで設定したルールだけ適用し、プリセットは触らない|Apply only the manager's rules, leave the presets untouched
+208|スキンのみ|Skins only
+209|ラウンド MVP の部分だけ差し替え · 作成 / 閲覧 / 共有 / インポート|Replaces only the round-MVP anthem · build / view / share / import
+210|Metamod をマウントするのはプラグインモードだけ。ボット強化・バッジ・スキンはそこで初めて有効になります。公式マッチなら右の「公式原版」でマウントを外して。|Only plugin mode mounts Metamod, which enables bot AI, badges and skins. For official matchmaking pick "Stock" on the right to unmount it.
+211|起動と状態|Launch & status
+212|起動失敗|Launch failed
+213|ゲームを起動|Launch game
+214|バッジを有効化|Enable badge
+215|プラグインを有効化|Enable plugin
+216|プラグイン有効化、ボット MVP 再生、公式音楽のミュート、プレイヤー音量調整、他人の MVP 方針、デフォルト音量はここで設定。変更は即プラグイン設定へ書き込まれます。|Enable the plugin, bot MVP playback, official music ducking, player volume control, other players' MVP policy and default volume here. Changes are written to the plugin config immediately.
+217|コマンド|Commands
+218|ぷぷめえめえ|Puku puku meh meh
+219|4 つのガイドは互いに独立。どれから始めてもよく、再起動しても進捗以外のデータは消えません。|The four tours are independent; start anywhere. Restarting the app won't touch your data.
+220|チーム連携|Teamwork
+221|Miku 固定、アスペクト比を保ってウィンドウいっぱいに表示|Fixed Miku background, aspect-filled to the window
+222|アイコン上書きを停止、アイコンは元に戻ります|Icon override disabled, icons are back to stock
+223|アイコン上書きを有効化|Icon override enabled
+224|アイコンリソース|Icon assets
+225|クロスヘア位置に bot を 1 体スポーン|Spawn a bot at your crosshair
+226|場に残す bot の数|How many bots to keep on the field
+227|入力|Enter
+228|処理中…|Processing…
+229|コピー失敗|Copy failed
+230|コピー失敗、手入力してください|Copy failed, type it manually
+231|ゲーム内コマンドをコピー|Copy in-game command
+232|パスをコピー|Copy path
+233|リンクをコピー|Copy link
+234|外観|Appearance
+235|多|More
+236|サイズ|Size
+237|失敗|Failed
+238|インストール|Install
+239|インストール / 修復キット|Install / Repair kit
+240|インストール / 更新|Install / Update
+241|インストールと切替|Install & toggles
+242|インストール中…|Installing…
+243|インストール失敗|Install failed
+244|インストール完了|Install complete
+245|インストール完了、|Installed, 
+246|インストール一覧|Install manifest
+247|完了|Done
+248|完全なボット|Full bots
+249|完全なボット / スキンのみ|Full bots / skins only
+250|完全モード：ボット AI + スキン抽選 + ルール + バッジが全て有効。スキンだけなら「スキンのみ」へ。|Full mode: bot AI + random skins + rules + badges all on. For skins only, switch to "Skins only".
+251|公式|Stock
+252|公式原版|Stock game
+253|対戦ルール|Match rules
+254|対応するゲーム内|In game this maps to 
+255|インポート完了|Import complete
+256|インポートした音楽はこの PC に保存され、再起動後も残ります|Imported music is stored locally and survives restarts
+257|効果音パックをインポート|Import sound pack
+258|変更する|Will change 
+259|少|Less
+260|まだ変更なし|No changes yet
+261|インストール一覧を開き InventorySimulator のバージョン・入手元・ビルド日時・インストール日時を確認。現在は上流 main の「配信スキップ」パッチ版で、スポーン直後にグローブ / 人形 / ペットを補います。|Expand the manifest and check InventorySimulator's version, source, build time and install time. This is the upstream main "skip-delivery" patch that fills gloves, agents and pets right after spawn.
+262|左上に FPS を表示|Show FPS in the top-left corner
+263|左下のあのカード。ローカル音楽の import、曲送り、音量調整ができます|That card in the bottom-left corner. Import local music, skip tracks and set volume
+264|全テンプレートから削除しました： |Removed from all sections: 
+265|保存しました|Saved
+266|無効化|Disabled
+267|すべてオフにしました|All disabled
+268|すべてオンにしました|All enabled
+269|オフ|Off
+270|書き込みました|Written
+271|プラグインモードに切替|Switched to plugin mode
+272|公式モードに戻しました|Switched back to stock mode
+273|切替ました|Switched
+274|切替ました |Switched 
+275|削除しました|Deleted
+276|アンインストールしました|Uninstalled
+277|同期しました|Synced
+278|有効化|Enabled
+279|コピーしました |Copied 
+280|!weaponkill をコピーしました|Copied !weaponkill
+281|インストール済み|Installed
+282|v1.3.0 をインストール済み|Installed v1.3.0
+283|インポートしました |Imported 
+284|デスクトップに書き出しました|Exported to desktop
+285|準備完了|Ready
+286|オン|On
+287|完全に削除しました |Permanently removed 
+288|復元しました：次回起動時にチュートリアルとお知らせが再表示されます|Restored: the tutorial and announcement will show again on next launch
+289|マウント済み|Mounted
+290|変更済み |Changed 
+291|配置しました|Placed
+292|最新です|Up to date
+293|すでに最新版です|Already up to date
+294|更新元をクリアしました|Update source cleared
+295|紐付け済み|Bound
+296|あなたのアカウントに紐付けました|Bound to your account
+297|効果音をコンパイルしました|Compiled the sound
+298|自動検出しました|Auto-detected
+299|インストール済み|Installed
+300|紐付けを解除しました|Unbound
+301|現在の Steam アカウントを読み取りました|Read the current Steam account
+302|現在の VPK の内容に戻しました|Restored to the current VPK contents
+303|非表示|Hidden
+304|常駐|Always on
+305|バランス|Balanced
+306|インベントリプラグイン、スキンのみモード、Web での装備設定|Inventory plugin, skins-only mode and the web loadout editor
+307|自分の ID の紐付けを推奨：|Recommended: bind your own ID 
+308|bot の武器スキンをオン（knives/gloves/stickers/charms/agents/music も同様）|Enable bot weapon skins (same for knives/gloves/stickers/charms/agents/music)
+309|チートモードをオン、noclip と god に必要|Enable cheats, required for noclip and god
+310|ラウンド開始時のフリーズ時間（秒）|Freeze time at round start, seconds
+311|射撃遅延|Fire delay
+312|強制的に一度再読み込み。|Force a full refresh.
+313|現在はインベントリ換肤（InventorySimulator）のみ読込中。ボット AI、スキン抽選、ルール、バッジは全て停止。難易度には影響しません。|Only InventorySimulator is loaded right now. Bot AI, random skins, rules and badges are all off. Difficulty is unaffected.
+314|現在のバージョン|Current version
+315|現在の言語|Current language
+316|デモ再生コンソール|Demo playback console
+317|プラグインを完全削除しますか？\n\naddons / overrides / アイコン類をバックアップなしで直接削除します。\n上書きされた公式ファイルは自動で復元され、Steam の再ダウンロードは不要です。\n\n戻すには「インストール / 修復キット」を再度押してください。|Delete all plugins permanently?\n\nThis removes addons / overrides / icon assets with no backup.\nOverwritten stock files are restored automatically, so Steam won't need to re-download.\n\nTo recover, just run "Install / Repair kit" again.
+318|プラグインを完全削除|Delete all plugins
+319|バッジ · アイコン · スキン|Badges · icons · skins
+320|バッジ設定を書き込みました|Badge config written
+321|まず 2 つの準備|Two things first
+322|概要|Overview
+323|概要ページの「インストール / 修復キット」は、この zip を展開してゲームディレクトリの 5 か所へ丸ごと上書きします；\n            続けて gameinfo.gi を修补し、音楽設定を保持し、バックアップを 1 份だけ残します。下の表がパッケージの中身です。|"Install / Repair kit" on the Overview page extracts this zip over five locations in the game folder;\n            then patches gameinfo.gi, keeps your music config and leaves a single backup. The table below lists everything in the package.
+324|起動時ポップアップを復元（永久に閉じた後に再表示）|Restore startup popups (after permanently dismissing them)
+325|ルールをデフォルトに戻す|Restore default rules
+326|自分だけに聞こえたい場合は「ボットが MVP でも再生」をオフに。|Want it only for yourself? Turn off "Play when a bot gets MVP".
+327|得点帯を変えたい、あるいは旧 1–18 ランクに戻したい場合は|To change the rating range or go back to the old 1–18 ranks, edit 
+328|マイMVP|My MVP
+329|、またはマネージャーから書き込んで 1 試合プレイすれば有効になります。|, or let the manager write it and play one round to apply.
+330|ソードオフ|Sawed-Off
+331|すべての bot をしゃがませる|Make every bot crouch
+332|グローブ|Gloves
+333|を押して初めて即時反映されます。|before it takes effect immediately.
+334|で確認できます：|to confirm: 
+335|パッケージ化失敗|Packaging failed
+336|診断ログをまとめる|Package diagnostic logs
+337|引き分けで延長戦へ · mp_overtime_enable|Overtime on a tie · mp_overtime_enable
+338|引き分けで延長戦|Overtime on a tie
+339|を開きます。反応しない場合、Steam ライブラリで CS2 を右クリック → プロパティ → 起動オプションに|and open it. If nothing happens, right-click CS2 in Steam → Properties → Launch Options and add 

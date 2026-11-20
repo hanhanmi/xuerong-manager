@@ -1,0 +1,22 @@
+設定に「被弾効果音ミュート」スイッチを追加。自分がヘッドショット・被弾・死亡したときの効果音をワンクリックで消し、オフにすれば自動復元。VPK は一切書き換えません|Added a Mute damage sounds toggle in Settings: silence the sounds of being headshot, hurt, or killed with one click, and restore everything by switching it off. No VPK is modified
+69 個の無音効果音を公式コンパイラで個別にコンパイルして exe に同梱。CS2 Workshop Tools は不要で、カスタム効果音も上書きしません|All 69 silent sounds are individually compiled with the official compiler and embedded in the exe. No CS2 Workshop Tools needed, and your custom sounds stay untouched
+インストールパッケージを 1.0.4 の安定版に戻しました。独自に差し替えた CounterStrikeSharp 1.0.380 は含みません|Restored the 1.0.4 stable install package; it no longer includes the self-replaced CounterStrikeSharp 1.0.380
+CS2 の 11/12 アップデート後にプラグインが全滅する問題 —— CounterStrikeSharp を 1.0.380 に更新。公式が 1.41.9.7 に当日対応した版で、ゲームのダウングレードは不要|Fixed all plugins dying after the 11/12 CS2 update — CounterStrikeSharp upgraded to 1.0.380, the official same-day build for 1.41.9.7. No game downgrade needed
+スクロール時に画面全体が急に明るくなる問題 —— スクロール中の降級背景がガラス状態より一段白かったので、合成後の明るさに合わせて 140ms のトランジションを追加|Fixed the whole window flashing brighter on wheel scroll — the scroll-degraded background was a notch whiter than the glass state; it now matches the composited brightness with a 140ms transition
+背景のミクがずれて端だけ表示される問題 —— ぼかしフィルタと中央寄せの transform を同じ video に掛けたせいで位置が崩れていた。inset でサイズ指定する方式に変更|Fixed the Miku background drifting off-position and showing only a corner — applying both a blur filter and a centering transform to the same video broke its positioning; sizing via inset now
+全体が重い問題 —— スクロールコンテナの毎フレーム transform、カードごとの SVG 変位フィルタ、全画面の背景ぼかしが重なってフレームレートを食い尽くしていた|Fixed the overall stutter — per-frame transform on the scroll container, an SVG displacement filter on every card, and a full-screen background blur chain were stacking up and eating the frame budget
+スクロール中は背景サンプリングを自動で停止し、手を止めて 140ms で復帰。カードのホバー位移を廃止し、ボタンがより素直に反応します|Background sampling is dropped while scrolling and restored 140ms after you stop; cards no longer shift on hover, so buttons feel more responsive
+﻿日本語 / 英語インターフェース。起動時とアップデート後は毎回日本語が既定で、中国語へ切り替えるか確認します|Japanese and English UI. Every launch and update defaults to Japanese and asks whether to switch to Chinese
+起動時のスタンプを 12 枚に増やし、メイン画像・3 枚のサムネイル・右下のステッカーが起動ごとにランダムで変わります|Startup stickers expanded to 12; the main art, three thumbnails and the corner sticker are randomized each launch
+リキッドガラスをエッジ屈折のディスプレイスメントマップ方式へ変更。カードの下地を再び透けさせ、縁に拡大する光のにじみがマウスを追従します|Liquid glass now uses an edge displacement map: the card base is translucent again, with a magnified glow along the rim that follows the cursor
+右下のステッカーに隠れていた「VPK に書き込む」ボタンをカード上部の常時表示バーへ移動|Moved "Write VPK" out from under the corner sticker into a sticky bar at the top of the card
+ページ切替とカード入場を短縮、ホバー / 押下のフィードバックを統一、減少モーションへの対応を追加|Shorter page and card entrances, unified hover / press feedback, and proper reduced-motion fallbacks
+ボットページ全体が白画面になる問題 —— 武器エディタが未定義変数を参照して描画時に例外、ツリーごと落下していた|Fixed a blank Bots page: the weapon editor referenced an undefined variable and crashed the whole tree on render
+ページごとのエラーバウンダリを追加。以降はエラーの出たページだけがメッセージと再試行ボタンを表示し、ウィンドウ全体が白くなることはありません|Added a per-page error boundary. A broken page now shows its own message and retry button instead of blanking the whole window
+ボット武器エディタ —— overrides/botprofile.vpk の 8 テンプレート（SniperPro / RiflePro / Scoper / SniperPure / Duelist / Rusher / Fastshot / Camper）を直接編集。武器を消せばそのボットは二度と買わず、差分もプレビューできます|Bot weapon editor — edit the 8 templates in overrides/botprofile.vpk (SniperPro / RiflePro / Scoper / SniperPure / Duelist / Rusher / Fastshot / Camper). Remove a weapon and bots stop buying it; preview the diff before writing
+リキッドガラス UI、設定からワンタッチでオン / オフ|Liquid glass UI with a one-click toggle in Settings
+起動画面を愛弥斯のアニメーション GIF に変更|Startup screen now uses Aemeath animated stickers
+MVP 効果音パックの削除が失敗しても成功と表示される問題 —— 各ディレクトリを個別に検証し、使用中なら該当パスを表示します|Fixed a false "deleted" result for MVP sound packs: each folder is verified and any locked path is reported
+ボット難易度の切替が gamemode 設定に上書きされ、マップ読み込み後に無効になる問題|Fixed bot difficulty being overridden by gamemode configs after a map load
+スキンガイドがボタンを見つけられず固まる問題|Fixed the skin guide getting stuck because it couldn't locate its target button
+プラグイン一覧とインストール経路を同期。真人の優先レートと ELO セーブを管理し、再起動してもリセットされません|Synced the plugin manifest and install path; human Premier rating and ELO saves now survive restarts

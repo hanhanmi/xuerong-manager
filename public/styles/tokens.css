@@ -1,0 +1,96 @@
+/* 雪绒人机管理器 — 设计 Token
+   粉色系磨砂玻璃，基于 Apple Liquid Glass 设计语言，
+   将原 Panel 的蓝色调替换为粉色系，保留全部玻璃材质与动效体系。 */
+
+:root {
+  /* —— 粉色调色板（主色 #FF5A8A 雪绒粉）—— */
+  --c-pink:           #ff5a8a;   /* 主色：按钮、链接、选中态、焦点环 */
+  --c-pink-light:     #ffb3cd;   /* 浅粉：强调辅助 */
+  --c-pink-soft:      #fff0f5;   /* 极浅粉：背景晕染 */
+  --c-pink-dark:      #e03e6e;   /* 深粉：悬停加深 */
+  --c-pink-glow:      rgba(255, 90, 138, 0.35);  /* 粉色发光 */
+
+  /* —— 中性色（Apple 灰阶，保留）—— */
+  --c-light-gray:     #e5e5ea;
+  --c-mid-gray:       #8e8e93;
+  --c-dark-gray-2:    #3a3a3c;
+  --c-dark-gray:      #1c1c1e;
+
+  /* —— 状态色 —— */
+  --c-green:          #34c759;
+  --c-orange:         #ff9500;
+  --c-red:            #ff3b30;
+  --c-yellow:         #ffd60a;
+  --c-purple:         #af52de;
+
+  --st-green: var(--c-green);
+  --st-yellow: var(--c-orange);
+  --st-red: var(--c-red);
+  --st-pink: var(--c-pink);
+  --st-off: var(--c-mid-gray);
+
+  /* —— 文字 —— */
+  --text-primary: var(--c-dark-gray);
+  --text-secondary: var(--c-dark-gray-2);
+  --text-tertiary: var(--c-mid-gray);
+  --text-on-accent: #ffffff;
+  --text-on-pink: #ffffff;
+
+  /* —— 圆角阶梯 —— */
+  --r-xs:   10px;
+  --r-sm:   14px;
+  --r-md:   20px;
+  --r-lg:   26px;
+  --r-xl:   30px;
+  --r-pill: 999px;
+
+  /* —— 阴影体系（三层叠加：接触线 + 环境投射 + 近距柔和）—— */
+  --sh-card: 0 1px 1.5px rgba(180, 60, 100, 0.06),
+             0 8px 24px -10px rgba(180, 60, 100, 0.15),
+             0 2px 8px -6px rgba(180, 60, 100, 0.08);
+  --sh-pop:  0 1px 1.5px rgba(180, 60, 100, 0.08),
+             0 22px 55px -14px rgba(180, 60, 100, 0.25),
+             0 8px 22px -12px rgba(180, 60, 100, 0.15);
+  --sh-soft: 0 4px 16px rgba(180, 60, 100, 0.06);
+
+  /* 粉色选中态光环 */
+  --sh-pink: 0 0 0 1px rgba(255, 90, 138, 0.35),
+             0 8px 24px -6px rgba(255, 90, 138, 0.35);
+  /* 绿色选中态光环（插件已安装） */
+  --sh-green: 0 0 0 1px rgba(52, 199, 89, 0.35),
+              0 8px 24px -6px rgba(52, 199, 89, 0.3);
+
+  /* 顶部高光内阴影 */
+  --sh-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  /* —— 磨砂玻璃材质 —— */
+  --glass-fill:        rgba(255, 255, 255, 0.52);    /* 普通玻璃，略提亮以配粉色 */
+  --glass-fill-strong: rgba(255, 255, 255, 0.68);    /* 强玻璃（模态/Toast） */
+  --glass-fill-pink:   rgba(255, 240, 245, 0.55);    /* 粉色玻璃层 */
+  --glass-stroke:      rgba(255, 255, 255, 0.7);
+  --glass-blur:        30px;
+  --glass-sat:         190%;
+  --glass-fallback:    rgba(247, 240, 243, 0.95);
+
+  /* 玻璃内光（透镜边缘）*/
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                 inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+                 inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+
+  /* —— 间距 —— */
+  --gap: 12px;
+  --pad: 16px;
+
+  /* —— 动效 —— */
+  --ease:        cubic-bezier(0.22, 0.61, 0.36, 1);   /* 主缓动，接近 ease-out */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);   /* Q 弹回弹（用于悬停强调）*/
+  --ease-out-back: cubic-bezier(0.2, 0.8, 0.2, 1.06); /* 轻微回弹入场 */
+  --dur:    220ms;
+  --dur-fast: 160ms;
+  --dur-slow: 360ms;
+
+  /* —— 布局 —— */
+  --shell-width: 960px;
+  --sidebar-w: 64px;
+  --titlebar-h: 44px;
+}

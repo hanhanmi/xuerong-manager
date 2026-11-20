@@ -1,0 +1,161 @@
+﻿510|エイム：|Aim: 
+511|わかったにゃ|Got it, meow
+512|ハードコア|Hardcore
+513|削除の確認|Confirm delete
+514|「|Delete "
+515|インベントリプラグインのバージョンを確認|Confirm the inventory plugin version
+516|パスを確認 → キットをインストール → プラグインモードで起動。ついでに中身も見ておく|Check the path → install the kit → launch in plugin mode, and see what's installed
+517|削除|Remove
+518|空中で連続ジャンプしても減速しない · sv_enablebunnyhopping|Keep speed on consecutive jumps · sv_enablebunnyhopping
+519|壁抜け飛行（sv_cheats 1 が必要）|Noclip (needs sv_cheats 1)
+520|ウォームアップを即終了して試合開始|End warmup and start immediately
+521|今すぐ更新|Update now
+522|1 番目が最優先、前にあるほど優先度が高い|The first weapon is preferred; earlier means higher priority
+523|初回：インストールしてゲームへ|First time: install and enter the game
+524|マネージャー側はデフォルト値です。ゲームに入ったらチャットで !weaponkill と送ってパック選択メニューを開き、続けて !番号（1–18）を送ると即反映。このカードの「ゲーム内コマンドをコピー」でそのままコピーできます。|The manager only sets a default. In game, send !weaponkill in chat to open the pack menu, then !number (1–18) to apply instantly. The "Copy in-game command" button copies it for you.
+525|コンポーネント|Components
+526|SteamID を紐付ける（空欄ならスキップ、サーバー内 !mvpwhoami で確認可）|Bind a SteamID (leave blank to skip; check with !mvpwhoami in game)
+527|選択中のパックに紐付ける|Bind to the selected pack
+528|CT に bot を 1 体追加|Add a bot to CT
+529|T に bot を 1 体追加|Add a bot to T
+530|ルームにパスワードを設定|Set a room password
+531|メンテナンス|Maintenance
+532|総合的な射撃精度・聴覚・判斷。真人は 45–75|Overall aim, hearing and judgment. Humans sit at 45–75
+533|編集|Edit
+534|不足 |Missing 
+535|どちらも必須、常駐|Both required, always on
+536|不足|Missing
+537|不足している項目（|Missing items (
+538|チャット欄 !mvpvol|Chat: !mvpvol
+539|対戦 / サーバー|Multiplayer / server
+540|背景とマテリアル|Background & materials
+541|背景テーマ|Background theme
+542|BGM|Background music
+543|自動ダウンロードは GitHub 公式といくつかの国内ミラーを順に試し、今回は全て失敗しました。\n              下のボタンからブラウザでダウンロードすれば、同じ最新版へアップデートできます。|Auto-download tried GitHub and several mirrors and all of them failed.\n              Use the button below to download in your browser — it updates to the same latest version.
+544|自動ダウンロード失敗|Auto-download failed
+545|チーム自動調整。ボット戦ではオフ推奨|Auto team balance. Recommended off for bot matches
+546|自動検出|Auto-detect
+547|カスタム MVP 音楽|Custom MVP music
+548|カスタム難易度|Custom difficulty
+549|補充モード：人数不足を bot で埋める|Fill mode: tops up the teams with bots
+550|表には各パックの更新日時・サイズ・紐付いた SteamID が並びます。「共有」で zip を書き出して友人へ、「効果音パックをインポート」で zip を選ぶと同名パックを上書きします。元の bat にドラッグするのと同じです。|The table lists each pack's update time, size and bound SteamIDs. "Share" exports a zip for friends; "Import sound pack" overwrites a same-named pack, just like dragging onto the original bat.
+551|に上書き|Overwrite into 
+552|ルール|Rules
+553|ルールをデフォルトに戻しました|Rules restored to default
+554|ルールを更新しました|Rules updated
+555|展開先が正しくありません|Wrong extraction location
+556|紐付け解除|Unbind
+557|凍結を解除|Unfreeze
+558|デフォルトに設定|Set as default
+559|設定|Settings
+560|診断パッケージを生成しました|Diagnostic package created
+561|先に設定で CS2 のディレクトリを選択してください|Choose the CS2 directory in Settings first
+562|読み込み中…|Reading…
+563|読み込み失敗|Read failed
+564|インストール一覧を読み込む|Read install manifest
+565|自分の SteamID を読み込む|Read my SteamID
+566|購入時間（秒）|Buy time, seconds
+567|ステッカー|Stickers
+568|GitHub Releases 経由。JSON の URL も可。1 回設定すれば後は不要です。|Uses GitHub Releases; a JSON URL also works. Set it once and forget it.
+569|開始秒|Start second
+570|やって覚える|Follow along
+571|他人が MVP の時|When someone else gets MVP
+572|パス · 背景 · 音楽 · 作者|Path · background · music · author
+573|パスと外観|Path & appearance
+574|パスをコピーしました|Path copied
+575|パスを更新しました|Path updated
+576|パスが無効です|Invalid path
+577|パスが間違っていると、この先は全部無駄になります。|If the path is wrong, nothing below will work.
+578|スキップした項目（|Skipped items (
+579|このステップをスキップ|Skip this step
+580|キック、ホストのみ使用可|Kick a player, host only
+581|場の bot を全員キック|Kick every bot on the field
+582|ID 偽装|Identity spoofing
+583|ソフトウェア更新|Software update
+584|パッケージ名を入力|Enter pack name
+585|実行モード|Run mode
+586|変更を元に戻す|Revert changes
+587|効果音パックがまだありません。新規作成するか、友人から受け取った zip をインポートしてください。|No sound packs yet. Create one or import a zip from a friend.
+588|この 55 項目のうち、|Of these 55 checks, 
+589|このページでエラーが発生しました|This page ran into an error
+590|この 2 つを済ませないと、パックを作っても音が鳴りません。|Skip these two and your pack won't play anything.
+591|このテンプレートは空です。ボットはデフォルトのランダム購入に戻ります。|This section is empty. Bots fall back to the default random buy.
+592|ここには「インストール / 修復キット」が実際に展開する CS2BotImprover.zip、サイズ、ビルド日時、そして各プラグインの入手元・バージョン・インストール日時を表示します。詳細を開けば 1 件ずつ照合できます。|Shows the actual CS2BotImprover.zip used by "Install / Repair kit": its size, build time, and every plugin's source, version and install time. Expand for a per-item check.
+593|全アイコンパックを一覧表示し、クリックで切り替えます。右上の「マウント済み」は 1593 個のアイコンと gameinfo のマウント行が揃っている意味。「未マウント」ならアイコンは変わりません。|Lists every icon pack; click to switch. "Mounted" at top right means all 1593 icons and the gameinfo mount line are in place; "Not mounted" means icons won't change.
+594|ここがメニューだにゃ|This is the menu, meow
+595|プラグインのバージョン、効果音パック数、デフォルト音量、この PC の SteamID、Workshop Tools と ffmpeg の有無を表示します。未インストールなら先に「インストール / 更新」を。|Shows the plugin version, pack count, default volume, local SteamID, and whether Workshop Tools and ffmpeg are present. If nothing is installed, hit "Install / Update" first.
+596|ゲームに入れない？|Can't get into a game?
+597|ゲーム起動時に D3D エラーやクラッシュが出たら、概要ページで「キルアイコンリソースの上書き」をオフにして再試行。|If you get a D3D error or a crash on launch, turn off "Kill icon resource override" on the Overview page and try again.
+598|バニーホップ|Bunny hop
+599|ガイドを終了|Exit tour
+600|機能を選ぶと該当ページへ自動で移動し、実際のボタンをハイライトして上に説明の吹き出しを出します。順に押していくだけです。|Pick a feature and the UI jumps to that page, highlights the real button and shows a tip bubble above it. Just follow along.
+601|キルアイコンパックを選ぶ|Pick a kill icon pack
+602|ゲームのルート階層（…\Counter-Strike Global Offensive）を選んでください。game\csgo ではありません。「自動検出」で大体見つかります。|Select the game root (…\Counter-Strike Global Offensive), not game\csgo. "Auto-detect" usually finds it.
+603|アイコンパック選択、マウント確認、ゲーム内での即時切替|Choose an icon pack, confirm the mount and switch live in game
+604|mp3 / wav / flac… を選択|Choose mp3 / wav / flac…
+605|キルアイコン第 3 セット、番号 1–18 を選択|Pick icon set 3, numbers 1–18
+606|パラメータを個別調整|Tune parameters individually
+607|オーバーレイ|Veil
+608|一部失敗：|Partial failure: 
+609|設定を再配信しました|Config re-applied
+610|内の|inside 
+611|のパラメータを直接編集し、プリセット差し替えは行いません。ゲーム再起動で有効。|directly, without swapping presets. Restart the game to apply.
+612|設定を再配信|Re-apply config
+613|再パッケージ|Rebuild package
+614|再チェック|Recheck
+615|ガイドを見直す|Replay guide
+616|このページを再試行|Retry this page
+617|前回接続したサーバーへ再接続|Reconnect to the last server
+618|リンクをコピーしました|Link copied
+619|ヘッドショット固定|Head lock
+620|ボディ固定|Body lock
+621|エラー情報|Error details
+622|チーム人数差の制限、0 = 無制限|Team size difference limit, 0 = unlimited
+623|チームチャット|Team chat
+624|味方同士でダメージを与え合う · mp_friendlyfire|Teammates can damage each other · mp_friendlyfire
+625|味方との衝突、2 = 重なり可|Teammate collision, 2 = stacking allowed
+626|味方のボイス音量|Teammate voice volume
+627|追加機能|Extras
+628|直近のクラッシュダンプを同梱|Include the latest crash dump
+629|難易度 · スキン抽選 · エイムと投擲物プリセット|Difficulty · random skins · aim & grenade presets
+630|難易度とアイテム|Difficulty & items
+631|難易度とルールには影響せず、戻してもプラグインは消えません。|Difficulty and rules are unaffected; switching back won't remove any plugins.
+632|難易度を |Difficulty set to 
+633|難易度プリセット|Difficulty presets
+634|難易度プリセットの正体は、|A difficulty preset is really just a different 
+635|レーダー倍率。小さいほど広く見える|Radar zoom; smaller shows more of the map
+636|ショットガン|Shotguns
+637|ミュート|Mute
+638|音楽|Music
+639|ミュージックキット|Music kit
+640|効果音パック|Sound packs
+641|効果音パック、共有とインポート|Packs, sharing & import
+642|音量|Volume
+643|オーディオ|Audio
+644|音声ファイル|Audio file
+645|項目|items
+646|項目はプラグインファイルで、インストール後に揃います。下の「インストール / 修復キット」から始めてください。|items are plugin files and only appear after installing. Start with "Install / Repair kit" below.
+647|項目（gameinfo.gi と 14 個の gamemode 設定）は Steam 純正ファイルで常に存在するため削除不要。\n            残りの |items (gameinfo.gi and 14 gamemode configs) are stock Steam files that always exist and never need deleting;\n            the other 
+648|確認：コンソールで|Verify: in the console, 
+649|高|High
+650|上級者向け：更新元|Advanced: update source
+651|デフォルト|Default
+652|デフォルト 40 秒、範囲 10–120。mp_c4timer に書き込み。|Default 40 s, range 10–120. Writes mp_c4timer.
+653|デフォルトオフ。他人の音量に影響させないため|Off by default so it doesn't affect other players' volume
+654|デフォルトオフ：真人が MVP の時だけ再生|Off by default: plays only when a human gets MVP
+655|デフォルト音量|Default volume
+656|マウス感度|Mouse sensitivity
+657|（overrides と gamemode cfg に書き込み済み。CS2 再起動で有効）|(written to overrides + gamemode cfg; restart CS2 to apply)
+658|、設定ページで更新|, update it in Settings
+659|：premier モードでランダムな優先レートを表示（デフォルト 1000–30000）、\n          ラウンド終了の MVP アニメーションもここが担当。PremierBadgeMvp は XP オーバーロードバッジだけを残し、ランク書き込みは 2 重上書きを避けるため停止しています。|: shows a random Premier rating in premier mode (default 1000–30000)\n          and plays the round-end MVP animation. PremierBadgeMvp keeps only the XP overload badge; its rank writing is disabled to avoid conflicts.
+660|：設定 → 音楽 → ミュージックキット → 外す。外さないと公式 MVP 音楽が重なります。|: Settings → Audio → Music Kit → unequip, otherwise the official MVP anthem overlaps.
+661|；\n        「プラグインモード」で起動したマネージャーが自動で付与済みです。|;\n        the manager already adds it when launching in plugin mode.
+662|；ゲーム内では |; in game use 
+663|被弾効果音をミュート|Mute damage sounds
+664|自分がヘッドショット / 被弾 / 死亡したとき|When you get headshot, hurt, or killed
+665|自分がヘッドショット・被弾・死亡したときの効果音をオフにします。無音ファイルでゲームのリソースを上書きし、ワンクリックで元に戻せます|Silences the sounds of being headshot, hurt, and killed. Overrides game resources with silent files; one click restores everything
+666|切り替えたら CS2 を再起動してください。オフにすると元のカスタム効果音も自動で復元されます|Restart CS2 after toggling. Switching it off automatically restores your original custom sounds
+667|被弾効果音をミュートしました。CS2 を再起動すると反映されます|Damage sounds muted. Restart CS2 to apply
+668|被弾効果音を元に戻しました。CS2 を再起動すると反映されます|Damage sounds restored. Restart CS2 to apply
+669|一部のみ適用|Partially applied
+670|設定に失敗しました|Failed to apply
